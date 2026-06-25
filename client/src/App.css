@@ -1,0 +1,56 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+}
+
+.header {
+  padding: 1.5rem 2rem;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 10;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  background: linear-gradient(to right, #a855f7, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+.header p {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.flow-wrapper {
+  flex-grow: 1;
+  position: relative;
+}
+
+/* Custom premium styling for dummy boxes */
+.premium-node {
+  background: rgba(30, 41, 59, 0.8) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(168, 85, 247, 0.3) !important;
+  border-radius: 12px !important;
+  padding: 15px 30px !important;
+  color: #f8fafc !important;
+  font-weight: 500 !important;
+  font-size: 1rem !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 0 15px rgba(168, 85, 247, 0.15) !important;
+  transition: all 0.3s ease !important;
+}
+
+.premium-node:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05), 0 0 25px rgba(168, 85, 247, 0.3) !important;
+  border-color: rgba(168, 85, 247, 0.8) !important;
+}
