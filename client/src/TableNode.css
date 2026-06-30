@@ -121,3 +121,28 @@
   height: 12px !important;
   border: 2px solid #0f172a !important;
 }
+
+.table-column.key-clickable {
+  cursor: pointer;
+  transition: background 0.15s ease, border-radius 0.15s ease;
+}
+
+.table-column.pk-row.key-clickable:hover {
+  background: rgba(251, 191, 36, 0.12);
+  border-radius: 4px;
+}
+
+.table-column.fk-row.key-clickable:hover {
+  background: rgba(56, 189, 248, 0.12);
+  border-radius: 4px;
+}
+
+.table-column.pk-row.key-active {
+  background: rgba(251, 191, 36, 0.15);
+  border-radius: 4px;
+}
+
+.table-column.fk-row.key-active {
+  background: rgba(56, 189, 248, 0.15);
+  border-radius: 4px;
+}

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import  { useState, useCallback, useEffect } from 'react';
 import { ReactFlow, Controls, Background, BackgroundVariant, useNodesState, useEdgesState } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './App.css';
@@ -9,11 +9,11 @@ const nodeTypes = {
 };
 
 const initialNodes = [
-  { 
-    id: 'users', 
+  {
+    id: 'users',
     type: 'tableNode',
-    position: { x: 100, y: 100 }, 
-    data: { 
+    position: { x: 100, y: 100 },
+    data: {
       label: 'Users',
       columns: [
         { name: 'id', type: 'UUID', isPrimaryKey: true },
@@ -23,11 +23,11 @@ const initialNodes = [
       ]
     },
   },
-  { 
-    id: 'orders', 
+  {
+    id: 'orders',
     type: 'tableNode',
-    position: { x: 450, y: 100 }, 
-    data: { 
+    position: { x: 450, y: 100 },
+    data: {
       label: 'Orders',
       columns: [
         { name: 'id', type: 'UUID', isPrimaryKey: true },
@@ -38,11 +38,11 @@ const initialNodes = [
       ]
     },
   },
-  { 
-    id: 'products', 
+  {
+    id: 'products',
     type: 'tableNode',
-    position: { x: 100, y: 400 }, 
-    data: { 
+    position: { x: 100, y: 400 },
+    data: {
       label: 'Products',
       columns: [
         { name: 'id', type: 'UUID', isPrimaryKey: true },
@@ -53,11 +53,11 @@ const initialNodes = [
       ]
     },
   },
-  { 
-    id: 'order_items', 
+  {
+    id: 'order_items',
     type: 'tableNode',
-    position: { x: 450, y: 400 }, 
-    data: { 
+    position: { x: 450, y: 400 },
+    data: {
       label: 'Order_Items',
       columns: [
         { name: 'id', type: 'UUID', isPrimaryKey: true },
@@ -70,27 +70,35 @@ const initialNodes = [
   },
 ];
 
+// sourceColumn / targetColumn link each edge to the specific key columns it represents.
+// Clicking either end of an edge activates it.
 const initialEdges = [
-  { 
-    id: 'e-users-orders', 
-    source: 'users', 
-    target: 'orders', 
+  {
+    id: 'e-users-orders',
+    source: 'users',
+    sourceColumn: 'id',
+    target: 'orders',
+    targetColumn: 'user_id',
     animated: true,
     style: { stroke: '#38bdf8', strokeWidth: 2 },
     hidden: true
   },
-  { 
-    id: 'e-orders-order_items', 
-    source: 'orders', 
-    target: 'order_items', 
+  {
+    id: 'e-orders-order_items',
+    source: 'orders',
+    sourceColumn: 'id',
+    target: 'order_items',
+    targetColumn: 'order_id',
     animated: true,
     style: { stroke: '#38bdf8', strokeWidth: 2 },
     hidden: true
   },
-  { 
-    id: 'e-products-order_items', 
-    source: 'products', 
-    target: 'order_items', 
+  {
+    id: 'e-products-order_items',
+    source: 'products',
+    sourceColumn: 'id',
+    target: 'order_items',
+    targetColumn: 'product_id',
     animated: true,
     style: { stroke: '#38bdf8', strokeWidth: 2 },
     hidden: true
@@ -100,81 +108,69 @@ const initialEdges = [
 function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  
-  // Track which nodes the user has expanded
-  const [expandedNodeIds, setExpandedNodeIds] = useState(new Set());
 
-  // Automatically compute graph visibility based on what's expanded
+  // Each entry is "nodeId:columnName" — toggled by clicking a PK or FK row
+  const [activeKeys, setActiveKeys] = useState(new Set());
+
+  const handleColumnClick = useCallback((nodeId, colName) => {
+    setActiveKeys(prev => {
+      const key = `${nodeId}:${colName}`;
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  }, []);
+
   useEffect(() => {
-    const visibleNodes = new Set(['users']); // Root is always visible
-    
-    // Breadth-first search to find all reachable visible nodes
-    let queue = ['users'];
-    let visited = new Set(['users']);
-
-    while (queue.length > 0) {
-      const currentId = queue.shift();
-      
-      // If this visible node is also expanded, its neighbors become visible
-      if (expandedNodeIds.has(currentId)) {
-        // Find neighbors
-        const neighbors = initialEdges
-          .filter(e => e.source === currentId || e.target === currentId)
-          .map(e => e.source === currentId ? e.target : e.source);
-          
-        for (const neighbor of neighbors) {
-          if (!visited.has(neighbor)) {
-            visited.add(neighbor);
-            visibleNodes.add(neighbor);
-            queue.push(neighbor);
-          }
-        }
+    // An edge is visible if either its source column or target column key is active
+    const visibleEdgeIds = new Set();
+    for (const edge of initialEdges) {
+      const sourceKey = `${edge.source}:${edge.sourceColumn}`;
+      const targetKey = `${edge.target}:${edge.targetColumn}`;
+      if (activeKeys.has(sourceKey) || activeKeys.has(targetKey)) {
+        visibleEdgeIds.add(edge.id);
       }
     }
 
-    // Update nodes visibility using our custom isRevealed property for CSS transitions
-    setNodes((nds) => 
-      nds.map((n) => ({
-        ...n,
-        hidden: false, // Never unmount them so we can animate out
-        data: {
-          ...n.data,
-          isRevealed: visibleNodes.has(n.id)
-        }
-      }))
-    );
-
-    // Update edges visibility
-    setEdges((eds) => 
-      eds.map((edge) => {
-        // An edge is visible if BOTH its nodes are visible 
-        // AND at least one of them was expanded to trigger this connection
-        const isVisible = visibleNodes.has(edge.source) && visibleNodes.has(edge.target) &&
-                          (expandedNodeIds.has(edge.source) || expandedNodeIds.has(edge.target));
-        return {
-          ...edge,
-          hidden: !isVisible
-        };
-      })
-    );
-  }, [expandedNodeIds, setNodes, setEdges]);
-
-  const onNodeClick = useCallback((event, clickedNode) => {
-    // Only allow clicking if the node is actually revealed
-    if (!clickedNode.data.isRevealed) return;
-
-    setExpandedNodeIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(clickedNode.id)) {
-        // Collapse: clicking an expanded node hides its children
-        newSet.delete(clickedNode.id);
-      } else {
-        // Expand: clicking a collapsed node reveals its children
-        newSet.add(clickedNode.id);
+    // A node is visible if it is the root or connected to at least one visible edge
+    const visibleNodes = new Set(['users']);
+    for (const edge of initialEdges) {
+      if (visibleEdgeIds.has(edge.id)) {
+        visibleNodes.add(edge.source);
+        visibleNodes.add(edge.target);
       }
-      return newSet;
-    });
-  }, []);
+    }
+
+    // Build per-node sets of active column names for highlighting
+    const activeColumnsByNode = {};
+    for (const key of activeKeys) {
+      const colonIdx = key.indexOf(':');
+      const nodeId = key.slice(0, colonIdx);
+      const colName = key.slice(colonIdx + 1);
+      if (!activeColumnsByNode[nodeId]) activeColumnsByNode[nodeId] = new Set();
+      activeColumnsByNode[nodeId].add(colName);
+    }
+
+    setNodes(nds => nds.map(n => ({
+      ...n,
+      hidden: false,
+      data: {
+        ...n.data,
+        isRevealed: visibleNodes.has(n.id),
+        activeColumnNames: activeColumnsByNode[n.id] || new Set(),
+        onColumnClick: (colName) => handleColumnClick(n.id, colName),
+      }
+    })));
+
+    setEdges(eds => eds.map(edge => ({
+      ...edge,
+      hidden: !visibleEdgeIds.has(edge.id)
+    })));
+  }, [activeKeys, handleColumnClick, setNodes, setEdges]);
 
   return (
     <div className="app-container">
@@ -183,14 +179,13 @@ function App() {
         <p>Proof of Concept: Drill Down ERD</p>
       </div>
       <div className="flow-wrapper">
-        <ReactFlow 
-          nodes={nodes} 
-          edges={edges} 
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
-          onNodeClick={onNodeClick}
           nodeTypes={nodeTypes}
-          fitView 
+          fitView
           colorMode="dark"
         >
           <Background variant={BackgroundVariant.Dots} gap={24} size={2} color="#4c1d95" />
