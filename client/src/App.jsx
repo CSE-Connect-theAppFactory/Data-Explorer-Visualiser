@@ -3,6 +3,7 @@ import { ReactFlow, Controls, Background, BackgroundVariant, useNodesState, useE
 import '@xyflow/react/dist/style.css';
 import './App.css';
 import TableNode from './TableNode';
+import DetailPanel from './DetailPanel';
 
 const nodeTypes = {
   tableNode: TableNode,
@@ -196,6 +197,7 @@ function App() {
           <Background variant={BackgroundVariant.Dots} gap={24} size={2} color="#4c1d95" />
           <Controls />
         </ReactFlow>
+        <DetailPanel />
       </div>
     </div>
   );
