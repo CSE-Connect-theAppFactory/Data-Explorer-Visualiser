@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ReactFlow, Controls, Background, BackgroundVariant, useNodesState, useEdgesState } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './App.css';
@@ -8,94 +8,90 @@ const nodeTypes = {
   tableNode: TableNode,
 };
 
-const initialNodes = [
-  { 
-    id: 'users', 
-    type: 'tableNode',
-    position: { x: 100, y: 100 }, 
-    data: { 
-      label: 'Users',
-      columns: [
-        { name: 'id', type: 'UUID', isPrimaryKey: true },
-        { name: 'username', type: 'VARCHAR(50)' },
-        { name: 'email', type: 'VARCHAR(255)' },
-        { name: 'created_at', type: 'TIMESTAMP' },
-      ]
-    },
+// Dummy data shaped exactly like the output of parseSqlFile()/parseSampleFile()
+// in parser/parseSql.js: an array of { table, columns: [{ name, type }] }.
+const parsedTables = [
+  {
+    table: 'customers',
+    columns: [
+      { name: 'id', type: 'INT' },
+      { name: 'first_name', type: 'VARCHAR(50)' },
+      { name: 'last_name', type: 'VARCHAR(50)' },
+      { name: 'email', type: 'VARCHAR(100)' },
+      { name: 'signup_date', type: 'DATE' },
+    ],
   },
-  { 
-    id: 'orders', 
-    type: 'tableNode',
-    position: { x: 450, y: 100 }, 
-    data: { 
-      label: 'Orders',
-      columns: [
-        { name: 'id', type: 'UUID', isPrimaryKey: true },
-        { name: 'user_id', type: 'UUID', isForeignKey: true },
-        { name: 'total_amount', type: 'DECIMAL(10,2)' },
-        { name: 'status', type: 'VARCHAR(20)' },
-        { name: 'created_at', type: 'TIMESTAMP' },
-      ]
-    },
+  {
+    table: 'products',
+    columns: [
+      { name: 'id', type: 'INT' },
+      { name: 'name', type: 'VARCHAR(100)' },
+      { name: 'sku', type: 'VARCHAR(20)' },
+      { name: 'price', type: 'INT' },
+    ],
   },
-  { 
-    id: 'products', 
-    type: 'tableNode',
-    position: { x: 100, y: 400 }, 
-    data: { 
-      label: 'Products',
-      columns: [
-        { name: 'id', type: 'UUID', isPrimaryKey: true },
-        { name: 'name', type: 'VARCHAR(100)' },
-        { name: 'description', type: 'TEXT' },
-        { name: 'price', type: 'DECIMAL(10,2)' },
-        { name: 'stock', type: 'INTEGER' },
-      ]
-    },
-  },
-  { 
-    id: 'order_items', 
-    type: 'tableNode',
-    position: { x: 450, y: 400 }, 
-    data: { 
-      label: 'Order_Items',
-      columns: [
-        { name: 'id', type: 'UUID', isPrimaryKey: true },
-        { name: 'order_id', type: 'UUID', isForeignKey: true },
-        { name: 'product_id', type: 'UUID', isForeignKey: true },
-        { name: 'quantity', type: 'INTEGER' },
-        { name: 'unit_price', type: 'DECIMAL(10,2)' },
-      ]
-    },
+  {
+    table: 'orders',
+    columns: [
+      { name: 'id', type: 'INT' },
+      { name: 'customer_id', type: 'INT' },
+      { name: 'product_id', type: 'INT' },
+      { name: 'quantity', type: 'INT' },
+      { name: 'order_date', type: 'DATE' },
+    ],
   },
 ];
 
-const initialEdges = [
-  { 
-    id: 'e-users-orders', 
-    source: 'users', 
-    target: 'orders', 
-    animated: true,
-    style: { stroke: '#38bdf8', strokeWidth: 2 },
-    hidden: true
-  },
-  { 
-    id: 'e-orders-order_items', 
-    source: 'orders', 
-    target: 'order_items', 
-    animated: true,
-    style: { stroke: '#38bdf8', strokeWidth: 2 },
-    hidden: true
-  },
-  { 
-    id: 'e-products-order_items', 
-    source: 'products', 
-    target: 'order_items', 
-    animated: true,
-    style: { stroke: '#38bdf8', strokeWidth: 2 },
-    hidden: true
-  },
-];
+const GRID_COLUMNS = 2;
+const NODE_SPACING_X = 400;
+const NODE_SPACING_Y = 350;
+
+// The parser only reports column names/types, so primary/foreign keys are
+// inferred by naming convention ('id' / '*_id') and nodes are laid out on a
+// grid, until the parser itself surfaces real key constraints and positions.
+function buildGraphFromTables(tables) {
+  const tableNames = new Set(tables.map((t) => t.table));
+
+  const nodes = tables.map((t, idx) => ({
+    id: t.table,
+    type: 'tableNode',
+    position: {
+      x: (idx % GRID_COLUMNS) * NODE_SPACING_X + 100,
+      y: Math.floor(idx / GRID_COLUMNS) * NODE_SPACING_Y + 100,
+    },
+    data: {
+      label: t.table.charAt(0).toUpperCase() + t.table.slice(1),
+      columns: t.columns.map((col) => ({
+        name: col.name,
+        type: col.type,
+        isPrimaryKey: col.name === 'id',
+        isForeignKey: col.name !== 'id' && col.name.endsWith('_id'),
+      })),
+    },
+  }));
+
+  const edges = [];
+  for (const t of tables) {
+    for (const col of t.columns) {
+      if (col.name === 'id' || !col.name.endsWith('_id')) continue;
+      const referenced = `${col.name.slice(0, -3)}s`; // e.g. customer_id -> customers
+      if (!tableNames.has(referenced) || referenced === t.table) continue;
+      edges.push({
+        id: `e-${referenced}-${t.table}`,
+        source: referenced,
+        target: t.table,
+        animated: true,
+        style: { stroke: '#38bdf8', strokeWidth: 2 },
+        hidden: true,
+      });
+    }
+  }
+
+  return { nodes, edges };
+}
+
+const { nodes: initialNodes, edges: initialEdges } = buildGraphFromTables(parsedTables);
+const rootNodeId = parsedTables[0].table;
 
 function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -106,11 +102,11 @@ function App() {
 
   // Automatically compute graph visibility based on what's expanded
   useEffect(() => {
-    const visibleNodes = new Set(['users']); // Root is always visible
-    
+    const visibleNodes = new Set([rootNodeId]); // Root is always visible
+
     // Breadth-first search to find all reachable visible nodes
-    let queue = ['users'];
-    let visited = new Set(['users']);
+    let queue = [rootNodeId];
+    let visited = new Set([rootNodeId]);
 
     while (queue.length > 0) {
       const currentId = queue.shift();
