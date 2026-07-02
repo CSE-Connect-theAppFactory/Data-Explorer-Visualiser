@@ -18,11 +18,18 @@ export default function TableNode({ data }) {
           data.columns.map((col, idx) => {
             const isRelational = col.isPrimaryKey || col.isForeignKey;
             const isActive = activeColumns.includes(col.name);
+            const handleRowClick = (event) => {
+              // Stop the click from bubbling to the node, which would
+              // otherwise trigger the table's expand/collapse behaviour.
+              event.stopPropagation();
+              data.onRowClick?.(col, data);
+            };
             return (
               <div
                 key={idx}
                 data-row-column={isRelational ? col.name : undefined}
-                className={`table-column ${col.isPrimaryKey ? "pk-row" : ""} ${col.isForeignKey ? "fk-row" : ""} ${isRelational ? "clickable-row" : ""} ${isActive ? "row-active" : ""}`}
+                onClick={handleRowClick}
+                className={`table-column ${col.isPrimaryKey ? "pk-row" : ""} ${col.isForeignKey ? "fk-row" : ""} clickable-row ${isActive ? "row-active" : ""}`}
               >
                 {col.isPrimaryKey && (
                   <Handle
