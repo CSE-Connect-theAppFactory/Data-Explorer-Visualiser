@@ -5,49 +5,62 @@ import "./TableNode.css";
 export default function TableNode({ data }) {
   // Use data.isRevealed for entry/exit animations
   const visibilityClass = data.isRevealed ? "revealed" : "concealed";
-  console.log("TableNode data:", data);
+  const activeColumns = data.activeColumns || [];
 
   return (
     <div className={`table-node premium-table ${visibilityClass}`}>
-      <Handle type="target" position={Position.Top} className="table-handle" />
-
       <div className="table-header">
         <span className="table-icon">🗄️</span> {data.label}
       </div>
 
       <div className="table-body">
         {data.columns &&
-          data.columns.map((col, idx) => (
-            <div
-              key={idx}
-              className={`table-column ${col.isPrimaryKey ? "pk-row" : ""} ${col.isForeignKey ? "fk-row" : ""}`}
-            >
-              <div className="column-left">
+          data.columns.map((col, idx) => {
+            const isRelational = col.isPrimaryKey || col.isForeignKey;
+            const isActive = activeColumns.includes(col.name);
+            return (
+              <div
+                key={idx}
+                data-row-column={isRelational ? col.name : undefined}
+                className={`table-column ${col.isPrimaryKey ? "pk-row" : ""} ${col.isForeignKey ? "fk-row" : ""} ${isRelational ? "clickable-row" : ""} ${isActive ? "row-active" : ""}`}
+              >
                 {col.isPrimaryKey && (
-                  <span className="key-icon pk" title="Primary Key">
-                    🔑
-                  </span>
+                  <Handle
+                    type="source"
+                    position={Position.Right}
+                    id={`${col.name}-source`}
+                    className="row-handle pk-handle"
+                  />
                 )}
                 {col.isForeignKey && (
-                  <span className="key-icon fk" title="Foreign Key">
-                    🔗
-                  </span>
+                  <Handle
+                    type="target"
+                    position={Position.Left}
+                    id={`${col.name}-target`}
+                    className="row-handle fk-handle"
+                  />
                 )}
-                {!col.isPrimaryKey && !col.isForeignKey && (
-                  <span className="key-icon spacer"></span>
-                )}
-                <span className="column-name">{col.name}</span>
+                <div className="column-left">
+                  {col.isPrimaryKey && (
+                    <span className="key-icon pk" title="Primary Key">
+                      🔑
+                    </span>
+                  )}
+                  {col.isForeignKey && (
+                    <span className="key-icon fk" title="Foreign Key">
+                      🔗
+                    </span>
+                  )}
+                  {!col.isPrimaryKey && !col.isForeignKey && (
+                    <span className="key-icon spacer"></span>
+                  )}
+                  <span className="column-name">{col.name}</span>
+                </div>
+                <span className="column-type">{col.type}</span>
               </div>
-              <span className="column-type">{col.type}</span>
-            </div>
-          ))}
+            );
+          })}
       </div>
-
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className="table-handle"
-      />
     </div>
   );
 }

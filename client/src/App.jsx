@@ -3,6 +3,7 @@ import { ReactFlow, Controls, Background, BackgroundVariant, useNodesState, useE
 import '@xyflow/react/dist/style.css';
 import './App.css';
 import TableNode from './TableNode';
+import GraphBuilder from './utilities/GraphBuilder.jsx';
 
 const nodeTypes = {
   tableNode: TableNode,
@@ -42,67 +43,34 @@ const parsedTables = [
   },
 ];
 
-const GRID_COLUMNS = 2;
-const NODE_SPACING_X = 400;
-const NODE_SPACING_Y = 350;
 
 // The parser only reports column names/types, so primary/foreign keys are
 // inferred by naming convention ('id' / '*_id') and nodes are laid out on a
 // grid, until the parser itself surfaces real key constraints and positions.
-function buildGraphFromTables(tables) {
-  const tableNames = new Set(tables.map((t) => t.table));
 
-  const nodes = tables.map((t, idx) => ({
-    id: t.table,
-    type: 'tableNode',
-    position: {
-      x: (idx % GRID_COLUMNS) * NODE_SPACING_X + 100,
-      y: Math.floor(idx / GRID_COLUMNS) * NODE_SPACING_Y + 100,
-    },
-    data: {
-      label: t.table.charAt(0).toUpperCase() + t.table.slice(1),
-      columns: t.columns.map((col) => ({
-        name: col.name,
-        type: col.type,
-        isPrimaryKey: col.name === 'id',
-        isForeignKey: col.name !== 'id' && col.name.endsWith('_id'),
-      })),
-    },
-  }));
-
-  const edges = [];
-  for (const t of tables) {
-    for (const col of t.columns) {
-      if (col.name === 'id' || !col.name.endsWith('_id')) continue;
-      const referenced = `${col.name.slice(0, -3)}s`; // e.g. customer_id -> customers
-      if (!tableNames.has(referenced) || referenced === t.table) continue;
-      edges.push({
-        id: `e-${referenced}-${t.table}`,
-        source: referenced,
-        target: t.table,
-        animated: true,
-        style: { stroke: '#38bdf8', strokeWidth: 2 },
-        hidden: true,
-      });
-    }
-  }
-
-  return { nodes, edges };
-}
-
-const { nodes: initialNodes, edges: initialEdges } = buildGraphFromTables(parsedTables);
+const { nodes: initialNodes, edges: initialEdges } = GraphBuilder(parsedTables);
 const rootNodeId = parsedTables[0].table;
 
 function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   
-  // Track which nodes the user has expanded
+  // Track which nodes the user has expanded (whole-table expand, reveals every neighbour)
   const [expandedNodeIds, setExpandedNodeIds] = useState(new Set());
+  // Track which specific relationships (edges) the user has expanded via a row click
+  const [expandedEdgeIds, setExpandedEdgeIds] = useState(new Set());
 
   // Automatically compute graph visibility based on what's expanded
   useEffect(() => {
     const visibleNodes = new Set([rootNodeId]); // Root is always visible
+
+    // An edge can be walked if its whole table was expanded, or if this
+    // specific relationship was expanded via a row click
+    const traversableEdgeIds = new Set(
+      initialEdges
+        .filter(e => expandedNodeIds.has(e.source) || expandedNodeIds.has(e.target) || expandedEdgeIds.has(e.id))
+        .map(e => e.id)
+    );
 
     // Breadth-first search to find all reachable visible nodes
     let queue = [rootNodeId];
@@ -110,54 +78,94 @@ function App() {
 
     while (queue.length > 0) {
       const currentId = queue.shift();
-      
-      // If this visible node is also expanded, its neighbors become visible
-      if (expandedNodeIds.has(currentId)) {
-        // Find neighbors
-        const neighbors = initialEdges
-          .filter(e => e.source === currentId || e.target === currentId)
-          .map(e => e.source === currentId ? e.target : e.source);
-          
-        for (const neighbor of neighbors) {
-          if (!visited.has(neighbor)) {
-            visited.add(neighbor);
-            visibleNodes.add(neighbor);
-            queue.push(neighbor);
-          }
+
+      const neighborEdges = initialEdges.filter(
+        e => traversableEdgeIds.has(e.id) && (e.source === currentId || e.target === currentId)
+      );
+
+      for (const e of neighborEdges) {
+        const neighbor = e.source === currentId ? e.target : e.source;
+        if (!visited.has(neighbor)) {
+          visited.add(neighbor);
+          visibleNodes.add(neighbor);
+          queue.push(neighbor);
         }
       }
     }
 
+    // Columns whose relationship is currently row-expanded, per table, so the
+    // matching row can be highlighted alongside its edge
+    const activeColumnsByNode = new Map();
+    for (const e of initialEdges) {
+      if (!expandedEdgeIds.has(e.id)) continue;
+      const addColumn = (nodeId, columnName) => {
+        if (!activeColumnsByNode.has(nodeId)) activeColumnsByNode.set(nodeId, []);
+        activeColumnsByNode.get(nodeId).push(columnName);
+      };
+      addColumn(e.source, e.data?.sourceColumn);
+      addColumn(e.target, e.data?.targetColumn);
+    }
+
     // Update nodes visibility using our custom isRevealed property for CSS transitions
-    setNodes((nds) => 
+    setNodes((nds) =>
       nds.map((n) => ({
         ...n,
         hidden: false, // Never unmount them so we can animate out
         data: {
           ...n.data,
-          isRevealed: visibleNodes.has(n.id)
+          isRevealed: visibleNodes.has(n.id),
+          activeColumns: activeColumnsByNode.get(n.id) || [],
         }
       }))
     );
 
     // Update edges visibility
-    setEdges((eds) => 
+    setEdges((eds) =>
       eds.map((edge) => {
-        // An edge is visible if BOTH its nodes are visible 
-        // AND at least one of them was expanded to trigger this connection
+        // An edge is visible if BOTH its nodes are visible AND it's traversable
         const isVisible = visibleNodes.has(edge.source) && visibleNodes.has(edge.target) &&
-                          (expandedNodeIds.has(edge.source) || expandedNodeIds.has(edge.target));
+                          traversableEdgeIds.has(edge.id);
+        const isHighlighted = expandedEdgeIds.has(edge.id);
         return {
           ...edge,
-          hidden: !isVisible
+          hidden: !isVisible,
+          style: {
+            ...edge.style,
+            stroke: isHighlighted ? '#fbbf24' : '#38bdf8',
+            strokeWidth: isHighlighted ? 3 : 2,
+          },
         };
       })
     );
-  }, [expandedNodeIds, setNodes, setEdges]);
+  }, [expandedNodeIds, expandedEdgeIds, setNodes, setEdges]);
 
   const onNodeClick = useCallback((event, clickedNode) => {
     // Only allow clicking if the node is actually revealed
     if (!clickedNode.data.isRevealed) return;
+
+    // Clicking a specific row expands/collapses just that one relationship
+    // and highlights the matching edge, instead of revealing every neighbour
+    const rowEl = event.target.closest('[data-row-column]');
+    if (rowEl) {
+      const columnName = rowEl.dataset.rowColumn;
+      const relatedEdges = initialEdges.filter(
+        (e) =>
+          (e.source === clickedNode.id && e.data?.sourceColumn === columnName) ||
+          (e.target === clickedNode.id && e.data?.targetColumn === columnName)
+      );
+      if (relatedEdges.length === 0) return;
+
+      setExpandedEdgeIds((prev) => {
+        const newSet = new Set(prev);
+        const allActive = relatedEdges.every((e) => newSet.has(e.id));
+        for (const e of relatedEdges) {
+          if (allActive) newSet.delete(e.id);
+          else newSet.add(e.id);
+        }
+        return newSet;
+      });
+      return;
+    }
 
     setExpandedNodeIds((prev) => {
       const newSet = new Set(prev);

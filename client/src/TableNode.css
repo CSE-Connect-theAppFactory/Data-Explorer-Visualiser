@@ -30,7 +30,8 @@
 
 .table-node {
   min-width: 220px;
-  overflow: hidden;
+  overflow: visible;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
 }
@@ -41,6 +42,7 @@
   font-weight: 600;
   font-size: 1.05rem;
   border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 12px 12px 0 0;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -58,16 +60,31 @@
 }
 
 .table-column {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 0.85rem;
   padding: 4px 0;
   border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+  transition: background 0.2s ease;
 }
 
 .table-column:last-child {
   border-bottom: none;
+}
+
+.table-column.clickable-row {
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.table-column.clickable-row:hover {
+  background: rgba(168, 85, 247, 0.12);
+}
+
+.table-column.row-active {
+  background: rgba(251, 191, 36, 0.1);
 }
 
 .column-left {
@@ -115,9 +132,18 @@
   color: #38bdf8;
 }
 
-.table-handle {
-  background: #a855f7 !important;
-  width: 12px !important;
-  height: 12px !important;
+.row-handle {
+  width: 10px !important;
+  height: 10px !important;
   border: 2px solid #0f172a !important;
+}
+
+.row-handle.pk-handle {
+  background: #fbbf24 !important;
+  right: -5px !important;
+}
+
+.row-handle.fk-handle {
+  background: #38bdf8 !important;
+  left: -5px !important;
 }
