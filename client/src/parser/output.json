@@ -1,0 +1,123 @@
+{
+  "entities": [
+    {
+      "id": "customers",
+      "name": "customers",
+      "type": "table"
+    },
+    {
+      "id": "products",
+      "name": "products",
+      "type": "table"
+    },
+    {
+      "id": "orders",
+      "name": "orders",
+      "type": "table"
+    }
+  ],
+  "fields": [
+    {
+      "id": "customers.id",
+      "entity_id": "customers",
+      "name": "id",
+      "type": "INT"
+    },
+    {
+      "id": "customers.first_name",
+      "entity_id": "customers",
+      "name": "first_name",
+      "type": "VARCHAR(50)"
+    },
+    {
+      "id": "customers.last_name",
+      "entity_id": "customers",
+      "name": "last_name",
+      "type": "VARCHAR(50)"
+    },
+    {
+      "id": "customers.email",
+      "entity_id": "customers",
+      "name": "email",
+      "type": "VARCHAR(100)"
+    },
+    {
+      "id": "customers.signup_date",
+      "entity_id": "customers",
+      "name": "signup_date",
+      "type": "DATE"
+    },
+    {
+      "id": "products.id",
+      "entity_id": "products",
+      "name": "id",
+      "type": "INT"
+    },
+    {
+      "id": "products.name",
+      "entity_id": "products",
+      "name": "name",
+      "type": "VARCHAR(100)"
+    },
+    {
+      "id": "products.sku",
+      "entity_id": "products",
+      "name": "sku",
+      "type": "VARCHAR(20)"
+    },
+    {
+      "id": "products.price",
+      "entity_id": "products",
+      "name": "price",
+      "type": "INT"
+    },
+    {
+      "id": "orders.id",
+      "entity_id": "orders",
+      "name": "id",
+      "type": "INT"
+    },
+    {
+      "id": "orders.customer_id",
+      "entity_id": "orders",
+      "name": "customer_id",
+      "type": "INT"
+    },
+    {
+      "id": "orders.product_id",
+      "entity_id": "orders",
+      "name": "product_id",
+      "type": "INT"
+    },
+    {
+      "id": "orders.quantity",
+      "entity_id": "orders",
+      "name": "quantity",
+      "type": "INT"
+    },
+    {
+      "id": "orders.order_date",
+      "entity_id": "orders",
+      "name": "order_date",
+      "type": "DATE"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "orders.customer_id->customers.id",
+      "from_entity": "orders",
+      "from_field": "customer_id",
+      "to_entity": "customers",
+      "to_field": "id",
+      "type": "foreign_key"
+    },
+    {
+      "id": "orders.product_id->products.id",
+      "from_entity": "orders",
+      "from_field": "product_id",
+      "to_entity": "products",
+      "to_field": "id",
+      "type": "foreign_key"
+    }
+  ]
+}

@@ -1,9 +1,11 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ReactFlow, Controls, Background, BackgroundVariant, useNodesState, useEdgesState } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './App.css';
 import TableNode from './TableNode';
 import DetailPanel from './DetailPanel';
+import sampleDataset1 from './parser/output.json';
+import sampleDataset2 from './parser/output2.json';
 
 const nodeTypes = {
   tableNode: TableNode,
@@ -105,6 +107,13 @@ function App() {
   // Track which nodes the user has expanded
   const [expandedNodeIds, setExpandedNodeIds] = useState(new Set());
 
+  // Detail panel test harness: stands in for Team B's real row/edge click event
+  // (not wired yet - see plan.md outstanding items). Lets us validate the
+  // DetailPanel lookup against both of Team A's real sample datasets.
+  const [dataset, setDataset] = useState(sampleDataset1);
+  const [selectedEntityId, setSelectedEntityId] = useState(null);
+  const [selectedRelationshipId, setSelectedRelationshipId] = useState(null);
+
   // Automatically compute graph visibility based on what's expanded
   useEffect(() => {
     const visibleNodes = new Set(['users']); // Root is always visible
@@ -184,20 +193,63 @@ function App() {
         <p>Proof of Concept: Drill Down ERD</p>
       </div>
       <div className="flow-wrapper">
-        <ReactFlow 
-          nodes={nodes} 
-          edges={edges} 
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onNodeClick={onNodeClick}
           nodeTypes={nodeTypes}
-          fitView 
+          fitView
           colorMode="dark"
         >
           <Background variant={BackgroundVariant.Dots} gap={24} size={2} color="#4c1d95" />
           <Controls />
         </ReactFlow>
-        <DetailPanel />
+        <div className="detail-panel-test-harness">
+          <select
+            value={dataset === sampleDataset1 ? 'sample1' : 'sample2'}
+            onChange={(e) => {
+              setDataset(e.target.value === 'sample1' ? sampleDataset1 : sampleDataset2);
+              setSelectedEntityId(null);
+              setSelectedRelationshipId(null);
+            }}
+          >
+            <option value="sample1">Sample: customers/orders/products</option>
+            <option value="sample2">Sample: departments/employees/projects</option>
+          </select>
+          <select
+            value={selectedEntityId ?? ''}
+            onChange={(e) => {
+              setSelectedEntityId(e.target.value || null);
+              setSelectedRelationshipId(null);
+            }}
+          >
+            <option value="">— select entity —</option>
+            {dataset.entities.map((entity) => (
+              <option key={entity.id} value={entity.id}>{entity.name}</option>
+            ))}
+          </select>
+          <select
+            value={selectedRelationshipId ?? ''}
+            onChange={(e) => {
+              setSelectedRelationshipId(e.target.value || null);
+              setSelectedEntityId(null);
+            }}
+          >
+            <option value="">— select relationship —</option>
+            {dataset.relationships.map((rel) => (
+              <option key={rel.id} value={rel.id}>
+                {rel.from_entity}.{rel.from_field} → {rel.to_entity}.{rel.to_field}
+              </option>
+            ))}
+          </select>
+        </div>
+        <DetailPanel
+          dataset={dataset}
+          selectedEntityId={selectedEntityId}
+          selectedRelationshipId={selectedRelationshipId}
+        />
       </div>
     </div>
   );

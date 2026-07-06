@@ -53,3 +53,41 @@
   color: #e2e8f0;
   font-weight: 500;
 }
+
+.detail-empty {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.detail-relationships {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(168, 85, 247, 0.2);
+}
+
+.detail-relationships-header {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.detail-relationship-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 4px 0;
+}
+
+.detail-relationship-table {
+  font-size: 0.9rem;
+  color: #e2e8f0;
+  font-weight: 500;
+}
+
+.detail-relationship-via {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
