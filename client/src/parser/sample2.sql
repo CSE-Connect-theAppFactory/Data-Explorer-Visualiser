@@ -31,3 +31,21 @@ CREATE TABLE assignments (
   FOREIGN KEY (employee_id) REFERENCES employees(id),
   FOREIGN KEY (project_id) REFERENCES projects(id)
 );
+
+INSERT INTO departments (id, name, budget) VALUES
+(1, 'Engineering', 500000),
+(2, 'Marketing', 150000);
+
+INSERT INTO employees (id, name, department_id, manager_id, salary) VALUES
+(1, 'Dana Price', 1, NULL, 95000),
+(2, 'Evan Shaw', 1, 1, 72000),
+(3, 'Fiona Reyes', 2, NULL, 68000);
+
+INSERT INTO projects (id, title, department_id, start_date, end_date) VALUES
+(1, 'Platform Migration', 1, '2024-01-01', '2024-06-30'),
+(2, 'Brand Refresh', 2, '2024-02-01', '2024-05-01');
+
+INSERT INTO assignments (id, employee_id, project_id, hours_allocated) VALUES
+(1, 2, 1, 120),
+(2, 1, 1, 40),
+(3, 3, 2, 80);

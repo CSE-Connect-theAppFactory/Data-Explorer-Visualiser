@@ -26,103 +26,120 @@
       "id": "departments.id",
       "entity_id": "departments",
       "name": "id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": true
     },
     {
       "id": "departments.name",
       "entity_id": "departments",
       "name": "name",
-      "type": "VARCHAR(100)"
+      "type": "VARCHAR(100)",
+      "isPrimaryKey": false
     },
     {
       "id": "departments.budget",
       "entity_id": "departments",
       "name": "budget",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "employees.id",
       "entity_id": "employees",
       "name": "id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": true
     },
     {
       "id": "employees.name",
       "entity_id": "employees",
       "name": "name",
-      "type": "VARCHAR(100)"
+      "type": "VARCHAR(100)",
+      "isPrimaryKey": false
     },
     {
       "id": "employees.department_id",
       "entity_id": "employees",
       "name": "department_id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "employees.manager_id",
       "entity_id": "employees",
       "name": "manager_id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "employees.salary",
       "entity_id": "employees",
       "name": "salary",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "projects.id",
       "entity_id": "projects",
       "name": "id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": true
     },
     {
       "id": "projects.title",
       "entity_id": "projects",
       "name": "title",
-      "type": "VARCHAR(150)"
+      "type": "VARCHAR(150)",
+      "isPrimaryKey": false
     },
     {
       "id": "projects.department_id",
       "entity_id": "projects",
       "name": "department_id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "projects.start_date",
       "entity_id": "projects",
       "name": "start_date",
-      "type": "DATE"
+      "type": "DATE",
+      "isPrimaryKey": false
     },
     {
       "id": "projects.end_date",
       "entity_id": "projects",
       "name": "end_date",
-      "type": "DATE"
+      "type": "DATE",
+      "isPrimaryKey": false
     },
     {
       "id": "assignments.id",
       "entity_id": "assignments",
       "name": "id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": true
     },
     {
       "id": "assignments.employee_id",
       "entity_id": "assignments",
       "name": "employee_id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "assignments.project_id",
       "entity_id": "assignments",
       "name": "project_id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "assignments.hours_allocated",
       "entity_id": "assignments",
       "name": "hours_allocated",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     }
   ],
   "relationships": [
@@ -165,6 +182,111 @@
       "to_entity": "projects",
       "to_field": "id",
       "type": "foreign_key"
+    }
+  ],
+  "records": [
+    {
+      "id": "departments#0",
+      "entity_id": "departments",
+      "values": {
+        "id": 1,
+        "name": "Engineering",
+        "budget": 500000
+      }
+    },
+    {
+      "id": "departments#1",
+      "entity_id": "departments",
+      "values": {
+        "id": 2,
+        "name": "Marketing",
+        "budget": 150000
+      }
+    },
+    {
+      "id": "employees#2",
+      "entity_id": "employees",
+      "values": {
+        "id": 1,
+        "name": "Dana Price",
+        "department_id": 1,
+        "manager_id": null,
+        "salary": 95000
+      }
+    },
+    {
+      "id": "employees#3",
+      "entity_id": "employees",
+      "values": {
+        "id": 2,
+        "name": "Evan Shaw",
+        "department_id": 1,
+        "manager_id": 1,
+        "salary": 72000
+      }
+    },
+    {
+      "id": "employees#4",
+      "entity_id": "employees",
+      "values": {
+        "id": 3,
+        "name": "Fiona Reyes",
+        "department_id": 2,
+        "manager_id": null,
+        "salary": 68000
+      }
+    },
+    {
+      "id": "projects#5",
+      "entity_id": "projects",
+      "values": {
+        "id": 1,
+        "title": "Platform Migration",
+        "department_id": 1,
+        "start_date": "2024-01-01",
+        "end_date": "2024-06-30"
+      }
+    },
+    {
+      "id": "projects#6",
+      "entity_id": "projects",
+      "values": {
+        "id": 2,
+        "title": "Brand Refresh",
+        "department_id": 2,
+        "start_date": "2024-02-01",
+        "end_date": "2024-05-01"
+      }
+    },
+    {
+      "id": "assignments#7",
+      "entity_id": "assignments",
+      "values": {
+        "id": 1,
+        "employee_id": 2,
+        "project_id": 1,
+        "hours_allocated": 120
+      }
+    },
+    {
+      "id": "assignments#8",
+      "entity_id": "assignments",
+      "values": {
+        "id": 2,
+        "employee_id": 1,
+        "project_id": 1,
+        "hours_allocated": 40
+      }
+    },
+    {
+      "id": "assignments#9",
+      "entity_id": "assignments",
+      "values": {
+        "id": 3,
+        "employee_id": 3,
+        "project_id": 2,
+        "hours_allocated": 80
+      }
     }
   ]
 }

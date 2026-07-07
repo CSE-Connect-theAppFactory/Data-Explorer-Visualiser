@@ -1,55 +1,10 @@
-import { parseSampleFile, parseSample2File } from "./parseSql.js";
+import { parseSampleFile, parseSample2File, convertToTeamBModel } from "./parseSql.js";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-/**
- * Converts parsed SQL data into the Team B JSON model.
- * @param {Object} parseResult - { tables: [...], relationships: [...] }
- * @returns {Object} - { entities: [...], fields: [...], relationships: [...] }
- */
-function convertToTeamBModel(parseResult) {
-  const { tables, relationships } = parseResult;
-
-  // Create entities from tables
-  const entities = tables.map((table) => ({
-    id: table.table,
-    name: table.table,
-    type: "table",
-  }));
-
-  // Create fields from columns
-  const fields = [];
-  for (const table of tables) {
-    for (const column of table.columns) {
-      fields.push({
-        id: `${table.table}.${column.name}`,
-        entity_id: table.table,
-        name: column.name,
-        type: column.type,
-      });
-    }
-  }
-
-  // Map relationships to match Team B schema
-  const mappedRelationships = relationships.map((rel) => ({
-    id: `${rel.from_table}.${rel.from_column}->${rel.to_table}.${rel.to_column}`,
-    from_entity: rel.from_table,
-    from_field: rel.from_column,
-    to_entity: rel.to_table,
-    to_field: rel.to_column,
-    type: "foreign_key",
-  }));
-
-  return {
-    entities,
-    fields,
-    relationships: mappedRelationships,
-  };
-}
 
 /**
  * Parse a file and save its JSON model output

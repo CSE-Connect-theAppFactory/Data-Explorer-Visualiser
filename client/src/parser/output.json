@@ -21,85 +21,99 @@
       "id": "customers.id",
       "entity_id": "customers",
       "name": "id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": true
     },
     {
       "id": "customers.first_name",
       "entity_id": "customers",
       "name": "first_name",
-      "type": "VARCHAR(50)"
+      "type": "VARCHAR(50)",
+      "isPrimaryKey": false
     },
     {
       "id": "customers.last_name",
       "entity_id": "customers",
       "name": "last_name",
-      "type": "VARCHAR(50)"
+      "type": "VARCHAR(50)",
+      "isPrimaryKey": false
     },
     {
       "id": "customers.email",
       "entity_id": "customers",
       "name": "email",
-      "type": "VARCHAR(100)"
+      "type": "VARCHAR(100)",
+      "isPrimaryKey": false
     },
     {
       "id": "customers.signup_date",
       "entity_id": "customers",
       "name": "signup_date",
-      "type": "DATE"
+      "type": "DATE",
+      "isPrimaryKey": false
     },
     {
       "id": "products.id",
       "entity_id": "products",
       "name": "id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": true
     },
     {
       "id": "products.name",
       "entity_id": "products",
       "name": "name",
-      "type": "VARCHAR(100)"
+      "type": "VARCHAR(100)",
+      "isPrimaryKey": false
     },
     {
       "id": "products.sku",
       "entity_id": "products",
       "name": "sku",
-      "type": "VARCHAR(20)"
+      "type": "VARCHAR(20)",
+      "isPrimaryKey": false
     },
     {
       "id": "products.price",
       "entity_id": "products",
       "name": "price",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "orders.id",
       "entity_id": "orders",
       "name": "id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": true
     },
     {
       "id": "orders.customer_id",
       "entity_id": "orders",
       "name": "customer_id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "orders.product_id",
       "entity_id": "orders",
       "name": "product_id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "orders.quantity",
       "entity_id": "orders",
       "name": "quantity",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "orders.order_date",
       "entity_id": "orders",
       "name": "order_date",
-      "type": "DATE"
+      "type": "DATE",
+      "isPrimaryKey": false
     }
   ],
   "relationships": [
@@ -118,6 +132,115 @@
       "to_entity": "products",
       "to_field": "id",
       "type": "foreign_key"
+    }
+  ],
+  "records": [
+    {
+      "id": "customers#0",
+      "entity_id": "customers",
+      "values": {
+        "id": 1,
+        "first_name": "Alice",
+        "last_name": "Nguyen",
+        "email": "alice.nguyen@example.com",
+        "signup_date": "2024-01-15"
+      }
+    },
+    {
+      "id": "customers#1",
+      "entity_id": "customers",
+      "values": {
+        "id": 2,
+        "first_name": "Ben",
+        "last_name": "Carter",
+        "email": "ben.carter@example.com",
+        "signup_date": "2024-02-20"
+      }
+    },
+    {
+      "id": "customers#2",
+      "entity_id": "customers",
+      "values": {
+        "id": 3,
+        "first_name": "Chloe",
+        "last_name": "Diaz",
+        "email": "chloe.diaz@example.com",
+        "signup_date": "2024-03-11"
+      }
+    },
+    {
+      "id": "products#3",
+      "entity_id": "products",
+      "values": {
+        "id": 1,
+        "name": "Wireless Mouse",
+        "sku": "SKU-001",
+        "price": 25
+      }
+    },
+    {
+      "id": "products#4",
+      "entity_id": "products",
+      "values": {
+        "id": 2,
+        "name": "Mechanical Keyboard",
+        "sku": "SKU-002",
+        "price": 75
+      }
+    },
+    {
+      "id": "products#5",
+      "entity_id": "products",
+      "values": {
+        "id": 3,
+        "name": "USB-C Hub",
+        "sku": "SKU-003",
+        "price": 40
+      }
+    },
+    {
+      "id": "orders#6",
+      "entity_id": "orders",
+      "values": {
+        "id": 1,
+        "customer_id": 1,
+        "product_id": 2,
+        "quantity": 1,
+        "order_date": "2024-04-01"
+      }
+    },
+    {
+      "id": "orders#7",
+      "entity_id": "orders",
+      "values": {
+        "id": 2,
+        "customer_id": 1,
+        "product_id": 1,
+        "quantity": 2,
+        "order_date": "2024-04-03"
+      }
+    },
+    {
+      "id": "orders#8",
+      "entity_id": "orders",
+      "values": {
+        "id": 3,
+        "customer_id": 2,
+        "product_id": 3,
+        "quantity": 1,
+        "order_date": "2024-04-10"
+      }
+    },
+    {
+      "id": "orders#9",
+      "entity_id": "orders",
+      "values": {
+        "id": 4,
+        "customer_id": 3,
+        "product_id": 2,
+        "quantity": 1,
+        "order_date": "2024-04-12"
+      }
     }
   ]
 }
