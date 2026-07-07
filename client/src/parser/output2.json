@@ -1,0 +1,170 @@
+{
+  "entities": [
+    {
+      "id": "departments",
+      "name": "departments",
+      "type": "table"
+    },
+    {
+      "id": "employees",
+      "name": "employees",
+      "type": "table"
+    },
+    {
+      "id": "projects",
+      "name": "projects",
+      "type": "table"
+    },
+    {
+      "id": "assignments",
+      "name": "assignments",
+      "type": "table"
+    }
+  ],
+  "fields": [
+    {
+      "id": "departments.id",
+      "entity_id": "departments",
+      "name": "id",
+      "type": "INT"
+    },
+    {
+      "id": "departments.name",
+      "entity_id": "departments",
+      "name": "name",
+      "type": "VARCHAR(100)"
+    },
+    {
+      "id": "departments.budget",
+      "entity_id": "departments",
+      "name": "budget",
+      "type": "INT"
+    },
+    {
+      "id": "employees.id",
+      "entity_id": "employees",
+      "name": "id",
+      "type": "INT"
+    },
+    {
+      "id": "employees.name",
+      "entity_id": "employees",
+      "name": "name",
+      "type": "VARCHAR(100)"
+    },
+    {
+      "id": "employees.department_id",
+      "entity_id": "employees",
+      "name": "department_id",
+      "type": "INT"
+    },
+    {
+      "id": "employees.manager_id",
+      "entity_id": "employees",
+      "name": "manager_id",
+      "type": "INT"
+    },
+    {
+      "id": "employees.salary",
+      "entity_id": "employees",
+      "name": "salary",
+      "type": "INT"
+    },
+    {
+      "id": "projects.id",
+      "entity_id": "projects",
+      "name": "id",
+      "type": "INT"
+    },
+    {
+      "id": "projects.title",
+      "entity_id": "projects",
+      "name": "title",
+      "type": "VARCHAR(150)"
+    },
+    {
+      "id": "projects.department_id",
+      "entity_id": "projects",
+      "name": "department_id",
+      "type": "INT"
+    },
+    {
+      "id": "projects.start_date",
+      "entity_id": "projects",
+      "name": "start_date",
+      "type": "DATE"
+    },
+    {
+      "id": "projects.end_date",
+      "entity_id": "projects",
+      "name": "end_date",
+      "type": "DATE"
+    },
+    {
+      "id": "assignments.id",
+      "entity_id": "assignments",
+      "name": "id",
+      "type": "INT"
+    },
+    {
+      "id": "assignments.employee_id",
+      "entity_id": "assignments",
+      "name": "employee_id",
+      "type": "INT"
+    },
+    {
+      "id": "assignments.project_id",
+      "entity_id": "assignments",
+      "name": "project_id",
+      "type": "INT"
+    },
+    {
+      "id": "assignments.hours_allocated",
+      "entity_id": "assignments",
+      "name": "hours_allocated",
+      "type": "INT"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "employees.department_id->departments.id",
+      "from_entity": "employees",
+      "from_field": "department_id",
+      "to_entity": "departments",
+      "to_field": "id",
+      "type": "foreign_key"
+    },
+    {
+      "id": "employees.manager_id->employees.id",
+      "from_entity": "employees",
+      "from_field": "manager_id",
+      "to_entity": "employees",
+      "to_field": "id",
+      "type": "foreign_key"
+    },
+    {
+      "id": "projects.department_id->departments.id",
+      "from_entity": "projects",
+      "from_field": "department_id",
+      "to_entity": "departments",
+      "to_field": "id",
+      "type": "foreign_key"
+    },
+    {
+      "id": "assignments.employee_id->employees.id",
+      "from_entity": "assignments",
+      "from_field": "employee_id",
+      "to_entity": "employees",
+      "to_field": "id",
+      "type": "foreign_key"
+    },
+    {
+      "id": "assignments.project_id->projects.id",
+      "from_entity": "assignments",
+      "from_field": "project_id",
+      "to_entity": "projects",
+      "to_field": "id",
+      "type": "foreign_key"
+    }
+  ]
+}
