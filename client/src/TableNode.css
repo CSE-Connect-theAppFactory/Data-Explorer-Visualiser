@@ -64,6 +64,11 @@
   font-size: 0.85rem;
   padding: 4px 0;
   border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+}
+
+.table-column:hover {
+  background: rgba(168, 85, 247, 0.1);
 }
 
 .table-column:last-child {

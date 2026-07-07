@@ -16,7 +16,14 @@ export default function TableNode({ data }) {
       
       <div className="table-body">
         {data.columns && data.columns.map((col, idx) => (
-          <div key={idx} className={`table-column ${col.isPrimaryKey ? 'pk-row' : ''} ${col.isForeignKey ? 'fk-row' : ''}`}>
+          <div
+            key={idx}
+            className={`table-column ${col.isPrimaryKey ? 'pk-row' : ''} ${col.isForeignKey ? 'fk-row' : ''}`}
+            onClick={(event) => {
+              event.stopPropagation();
+              data.onColumnClick?.();
+            }}
+          >
             <div className="column-left">
               {col.isPrimaryKey && <span className="key-icon pk" title="Primary Key">🔑</span>}
               {col.isForeignKey && <span className="key-icon fk" title="Foreign Key">🔗</span>}
