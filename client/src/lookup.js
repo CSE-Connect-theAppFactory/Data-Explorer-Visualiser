@@ -17,3 +17,7 @@ export function getRelationshipsForEntity(dataset, entityId) {
 export function getRelationship(dataset, relationshipId) {
   return dataset.relationships.find((r) => r.id === relationshipId) ?? null;
 }
+
+export function getRecordsForEntity(dataset, entityId) {
+  return (dataset.records ?? []).filter((r) => r.entity_id === entityId);
+}

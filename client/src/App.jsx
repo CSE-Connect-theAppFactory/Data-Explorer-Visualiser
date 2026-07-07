@@ -1,9 +1,11 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { ReactFlow, Controls, Background, BackgroundVariant, useNodesState, useEdgesState } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './App.css';
 import TableNode from './TableNode';
 import DetailPanel from './DetailPanel';
+import RecordsPanel from './RecordsPanel';
+import { buildGraph } from './graphBuilder';
 import sampleDataset1 from './parser/output.json';
 import sampleDataset2 from './parser/output2.json';
 
@@ -11,127 +13,55 @@ const nodeTypes = {
   tableNode: TableNode,
 };
 
-const initialNodes = [
-  { 
-    id: 'users', 
-    type: 'tableNode',
-    position: { x: 100, y: 100 }, 
-    data: { 
-      label: 'Users',
-      columns: [
-        { name: 'id', type: 'UUID', isPrimaryKey: true },
-        { name: 'username', type: 'VARCHAR(50)' },
-        { name: 'email', type: 'VARCHAR(255)' },
-        { name: 'created_at', type: 'TIMESTAMP' },
-      ]
-    },
-  },
-  { 
-    id: 'orders', 
-    type: 'tableNode',
-    position: { x: 450, y: 100 }, 
-    data: { 
-      label: 'Orders',
-      columns: [
-        { name: 'id', type: 'UUID', isPrimaryKey: true },
-        { name: 'user_id', type: 'UUID', isForeignKey: true },
-        { name: 'total_amount', type: 'DECIMAL(10,2)' },
-        { name: 'status', type: 'VARCHAR(20)' },
-        { name: 'created_at', type: 'TIMESTAMP' },
-      ]
-    },
-  },
-  { 
-    id: 'products', 
-    type: 'tableNode',
-    position: { x: 100, y: 400 }, 
-    data: { 
-      label: 'Products',
-      columns: [
-        { name: 'id', type: 'UUID', isPrimaryKey: true },
-        { name: 'name', type: 'VARCHAR(100)' },
-        { name: 'description', type: 'TEXT' },
-        { name: 'price', type: 'DECIMAL(10,2)' },
-        { name: 'stock', type: 'INTEGER' },
-      ]
-    },
-  },
-  { 
-    id: 'order_items', 
-    type: 'tableNode',
-    position: { x: 450, y: 400 }, 
-    data: { 
-      label: 'Order_Items',
-      columns: [
-        { name: 'id', type: 'UUID', isPrimaryKey: true },
-        { name: 'order_id', type: 'UUID', isForeignKey: true },
-        { name: 'product_id', type: 'UUID', isForeignKey: true },
-        { name: 'quantity', type: 'INTEGER' },
-        { name: 'unit_price', type: 'DECIMAL(10,2)' },
-      ]
-    },
-  },
-];
-
-const initialEdges = [
-  { 
-    id: 'e-users-orders', 
-    source: 'users', 
-    target: 'orders', 
-    animated: true,
-    style: { stroke: '#38bdf8', strokeWidth: 2 },
-    hidden: true
-  },
-  { 
-    id: 'e-orders-order_items', 
-    source: 'orders', 
-    target: 'order_items', 
-    animated: true,
-    style: { stroke: '#38bdf8', strokeWidth: 2 },
-    hidden: true
-  },
-  { 
-    id: 'e-products-order_items', 
-    source: 'products', 
-    target: 'order_items', 
-    animated: true,
-    style: { stroke: '#38bdf8', strokeWidth: 2 },
-    hidden: true
-  },
-];
-
 function App() {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  
-  // Track which nodes the user has expanded
-  const [expandedNodeIds, setExpandedNodeIds] = useState(new Set());
-
-  // Detail panel test harness: stands in for Team B's real row/edge click event,
-  // which isn't wired yet. Lets us validate the DetailPanel lookup against both
-  // of Team A's real sample datasets.
   const [dataset, setDataset] = useState(sampleDataset1);
   const [selectedEntityId, setSelectedEntityId] = useState(null);
   const [selectedRelationshipId, setSelectedRelationshipId] = useState(null);
+  const [recordsEntityId, setRecordsEntityId] = useState(null);
+
+  // Rebuilt whenever the dataset changes (e.g. switching samples)
+  const baseGraph = useMemo(() => buildGraph(dataset), [dataset]);
+  const rootId = dataset.entities[0]?.id ?? null;
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(baseGraph.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(baseGraph.edges);
+
+  // Track which nodes the user has expanded
+  const [expandedNodeIds, setExpandedNodeIds] = useState(new Set());
+
+  // Reset the graph and any selection whenever a new dataset comes in.
+  // Done during render (React's recommended way to reset state on a prop/derived-value
+  // change) rather than in an effect, to avoid an extra cascading render.
+  const [prevBaseGraph, setPrevBaseGraph] = useState(baseGraph);
+  if (baseGraph !== prevBaseGraph) {
+    setPrevBaseGraph(baseGraph);
+    setNodes(baseGraph.nodes);
+    setEdges(baseGraph.edges);
+    setExpandedNodeIds(new Set());
+    setSelectedEntityId(null);
+    setSelectedRelationshipId(null);
+  }
 
   // Automatically compute graph visibility based on what's expanded
   useEffect(() => {
-    const visibleNodes = new Set(['users']); // Root is always visible
-    
+    if (!rootId) return;
+
+    const visibleNodes = new Set([rootId]); // Root is always visible
+
     // Breadth-first search to find all reachable visible nodes
-    let queue = ['users'];
-    let visited = new Set(['users']);
+    let queue = [rootId];
+    let visited = new Set([rootId]);
 
     while (queue.length > 0) {
       const currentId = queue.shift();
-      
+
       // If this visible node is also expanded, its neighbors become visible
       if (expandedNodeIds.has(currentId)) {
         // Find neighbors
-        const neighbors = initialEdges
+        const neighbors = baseGraph.edges
           .filter(e => e.source === currentId || e.target === currentId)
           .map(e => e.source === currentId ? e.target : e.source);
-          
+
         for (const neighbor of neighbors) {
           if (!visited.has(neighbor)) {
             visited.add(neighbor);
@@ -143,7 +73,7 @@ function App() {
     }
 
     // Update nodes visibility using our custom isRevealed property for CSS transitions
-    setNodes((nds) => 
+    setNodes((nds) =>
       nds.map((n) => ({
         ...n,
         hidden: false, // Never unmount them so we can animate out
@@ -155,9 +85,9 @@ function App() {
     );
 
     // Update edges visibility
-    setEdges((eds) => 
+    setEdges((eds) =>
       eds.map((edge) => {
-        // An edge is visible if BOTH its nodes are visible 
+        // An edge is visible if BOTH its nodes are visible
         // AND at least one of them was expanded to trigger this connection
         const isVisible = visibleNodes.has(edge.source) && visibleNodes.has(edge.target) &&
                           (expandedNodeIds.has(edge.source) || expandedNodeIds.has(edge.target));
@@ -167,11 +97,21 @@ function App() {
         };
       })
     );
-  }, [expandedNodeIds, setNodes, setEdges]);
+  }, [expandedNodeIds, baseGraph, rootId, setNodes, setEdges]);
+
+  // Column rows call onColumnClick to open the records view for their table,
+  // independent of the node-level click (expand/collapse + schema selection).
+  const nodesWithHandlers = useMemo(
+    () => nodes.map((n) => ({ ...n, data: { ...n.data, onColumnClick: () => setRecordsEntityId(n.id) } })),
+    [nodes]
+  );
 
   const onNodeClick = useCallback((event, clickedNode) => {
     // Only allow clicking if the node is actually revealed
     if (!clickedNode.data.isRevealed) return;
+
+    setSelectedEntityId(clickedNode.id);
+    setSelectedRelationshipId(null);
 
     setExpandedNodeIds((prev) => {
       const newSet = new Set(prev);
@@ -186,6 +126,11 @@ function App() {
     });
   }, []);
 
+  const onEdgeClick = useCallback((event, clickedEdge) => {
+    setSelectedRelationshipId(clickedEdge.id);
+    setSelectedEntityId(null);
+  }, []);
+
   return (
     <div className="app-container">
       <div className="header">
@@ -194,11 +139,12 @@ function App() {
       </div>
       <div className="flow-wrapper">
         <ReactFlow
-          nodes={nodes}
+          nodes={nodesWithHandlers}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onNodeClick={onNodeClick}
+          onEdgeClick={onEdgeClick}
           nodeTypes={nodeTypes}
           fitView
           colorMode="dark"
@@ -206,43 +152,15 @@ function App() {
           <Background variant={BackgroundVariant.Dots} gap={24} size={2} color="#4c1d95" />
           <Controls />
         </ReactFlow>
-        <div className="detail-panel-test-harness">
+        <div className="data-source-controls">
           <select
             value={dataset === sampleDataset1 ? 'sample1' : 'sample2'}
             onChange={(e) => {
               setDataset(e.target.value === 'sample1' ? sampleDataset1 : sampleDataset2);
-              setSelectedEntityId(null);
-              setSelectedRelationshipId(null);
             }}
           >
             <option value="sample1">Sample: customers/orders/products</option>
             <option value="sample2">Sample: departments/employees/projects</option>
-          </select>
-          <select
-            value={selectedEntityId ?? ''}
-            onChange={(e) => {
-              setSelectedEntityId(e.target.value || null);
-              setSelectedRelationshipId(null);
-            }}
-          >
-            <option value="">— select entity —</option>
-            {dataset.entities.map((entity) => (
-              <option key={entity.id} value={entity.id}>{entity.name}</option>
-            ))}
-          </select>
-          <select
-            value={selectedRelationshipId ?? ''}
-            onChange={(e) => {
-              setSelectedRelationshipId(e.target.value || null);
-              setSelectedEntityId(null);
-            }}
-          >
-            <option value="">— select relationship —</option>
-            {dataset.relationships.map((rel) => (
-              <option key={rel.id} value={rel.id}>
-                {rel.from_entity}.{rel.from_field} → {rel.to_entity}.{rel.to_field}
-              </option>
-            ))}
           </select>
         </div>
         <DetailPanel
@@ -250,6 +168,13 @@ function App() {
           selectedEntityId={selectedEntityId}
           selectedRelationshipId={selectedRelationshipId}
         />
+        {recordsEntityId && (
+          <RecordsPanel
+            dataset={dataset}
+            entityId={recordsEntityId}
+            onClose={() => setRecordsEntityId(null)}
+          />
+        )}
       </div>
     </div>
   );
