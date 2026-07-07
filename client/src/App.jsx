@@ -107,9 +107,9 @@ function App() {
   // Track which nodes the user has expanded
   const [expandedNodeIds, setExpandedNodeIds] = useState(new Set());
 
-  // Detail panel test harness: stands in for Team B's real row/edge click event
-  // (not wired yet - see plan.md outstanding items). Lets us validate the
-  // DetailPanel lookup against both of Team A's real sample datasets.
+  // Detail panel test harness: stands in for Team B's real row/edge click event,
+  // which isn't wired yet. Lets us validate the DetailPanel lookup against both
+  // of Team A's real sample datasets.
   const [dataset, setDataset] = useState(sampleDataset1);
   const [selectedEntityId, setSelectedEntityId] = useState(null);
   const [selectedRelationshipId, setSelectedRelationshipId] = useState(null);
