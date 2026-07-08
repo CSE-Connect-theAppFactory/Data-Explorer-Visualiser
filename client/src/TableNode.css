@@ -63,6 +63,7 @@
 }
 
 .table-column {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -125,9 +126,17 @@
   color: #38bdf8;
 }
 
-.table-handle {
+.row-handle {
   background: #a855f7 !important;
-  width: 12px !important;
-  height: 12px !important;
+  width: 8px !important;
+  height: 8px !important;
   border: 2px solid #0f172a !important;
+}
+
+.row-handle.react-flow__handle-left {
+  left: -20px !important;
+}
+
+.row-handle.react-flow__handle-right {
+  right: -20px !important;
 }

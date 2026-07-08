@@ -9,12 +9,10 @@ export default function TableNode({ data }) {
 
   return (
     <div className={`table-node premium-table ${visibilityClass} ${highlightClass}`}>
-      <Handle type="target" position={Position.Top} className="table-handle" />
-      
       <div className="table-header">
         <span className="table-icon">🗄️</span> {data.label}
       </div>
-      
+
       <div className="table-body">
         {data.columns && data.columns.map((col, idx) => (
           <div
@@ -25,6 +23,12 @@ export default function TableNode({ data }) {
               data.onColumnClick?.();
             }}
           >
+            {col.isPrimaryKey && (
+              <>
+                <Handle type="target" position={Position.Left} id={`${col.name}-target-left`} className="row-handle" />
+                <Handle type="target" position={Position.Right} id={`${col.name}-target-right`} className="row-handle" />
+              </>
+            )}
             <div className="column-left">
               {col.isPrimaryKey && <span className="key-icon pk" title="Primary Key">🔑</span>}
               {col.isForeignKey && <span className="key-icon fk" title="Foreign Key">🔗</span>}
@@ -32,11 +36,15 @@ export default function TableNode({ data }) {
               <span className="column-name">{col.name}</span>
             </div>
             <span className="column-type">{col.type}</span>
+            {col.isForeignKey && (
+              <>
+                <Handle type="source" position={Position.Left} id={`${col.name}-source-left`} className="row-handle" />
+                <Handle type="source" position={Position.Right} id={`${col.name}-source-right`} className="row-handle" />
+              </>
+            )}
           </div>
         ))}
       </div>
-
-      <Handle type="source" position={Position.Bottom} className="table-handle" />
     </div>
   );
 }

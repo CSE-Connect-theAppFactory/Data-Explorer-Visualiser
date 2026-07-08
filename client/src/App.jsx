@@ -5,12 +5,17 @@ import './App.css';
 import TableNode from './TableNode';
 import DetailPanel from './DetailPanel';
 import RecordsPanel from './RecordsPanel';
+import SelfLoopEdge from './SelfLoopEdge';
 import { buildGraph } from './graphBuilder';
 import sampleDataset1 from './parser/output.json';
 import sampleDataset2 from './parser/output2.json';
 
 const nodeTypes = {
   tableNode: TableNode,
+};
+
+const edgeTypes = {
+  selfLoop: SelfLoopEdge,
 };
 
 function App() {
@@ -172,6 +177,7 @@ function App() {
           onNodeClick={onNodeClick}
           onEdgeClick={onEdgeClick}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           fitView
           colorMode="dark"
         >
