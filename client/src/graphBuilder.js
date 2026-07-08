@@ -1,6 +1,8 @@
 // Converts Team A's dataset shape ({ entities, fields, relationships }) into
 // React Flow's { nodes, edges }, so any dataset can drive the graph.
 
+import { MarkerType } from '@xyflow/react';
+
 export function buildGraph(dataset) {
   const fkFieldIds = new Set(dataset.relationships.map((r) => `${r.from_entity}.${r.from_field}`));
 
@@ -95,6 +97,9 @@ export function buildGraph(dataset) {
       type: isSelfReference ? 'selfLoop' : undefined,
       animated: true,
       style: { stroke: '#38bdf8', strokeWidth: 2 },
+      // Arrow points from the foreign key at from_field toward the primary
+      // key it references, showing which table's row the FK depends on.
+      markerEnd: { type: MarkerType.ArrowClosed, color: '#38bdf8', width: 18, height: 18 },
       hidden: true,
     };
   });

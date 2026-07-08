@@ -131,6 +131,10 @@ function App() {
           stroke: isSelected ? '#facc15' : edge.style?.stroke,
           strokeWidth: isSelected ? 4 : edge.style?.strokeWidth,
         },
+        markerEnd: {
+          ...edge.markerEnd,
+          color: isSelected ? '#facc15' : edge.markerEnd?.color,
+        },
         zIndex: isSelected ? 1000 : 0,
       };
     }),

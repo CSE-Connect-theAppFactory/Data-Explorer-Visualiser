@@ -1,11 +1,22 @@
-import React from 'react';
-import { Handle, Position } from '@xyflow/react';
+import React, { useEffect } from 'react';
+import { Handle, Position, useUpdateNodeInternals } from '@xyflow/react';
 import './TableNode.css';
 
-export default function TableNode({ data }) {
+export default function TableNode({ id, data }) {
   // Use data.isRevealed for entry/exit animations
   const visibilityClass = data.isRevealed ? 'revealed' : 'concealed';
   const highlightClass = data.isHighlighted ? 'highlighted-connection' : '';
+
+  // While concealed, this node sits under a CSS transform (scale/translate)
+  // that React Flow's handle-bounds measurement can pick up, mispositioning
+  // every edge attached to this table. Once the reveal transition finishes
+  // and the transform settles to identity, force a re-measure.
+  const updateNodeInternals = useUpdateNodeInternals();
+  useEffect(() => {
+    if (!data.isRevealed) return;
+    const timer = setTimeout(() => updateNodeInternals(id), 450);
+    return () => clearTimeout(timer);
+  }, [data.isRevealed, id, updateNodeInternals]);
 
   return (
     <div className={`table-node premium-table ${visibilityClass} ${highlightClass}`}>
