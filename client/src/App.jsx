@@ -99,11 +99,37 @@ function App() {
     );
   }, [expandedNodeIds, baseGraph, rootId, setNodes, setEdges]);
 
+  // The edge backing the current relationship selection, used to highlight
+  // both it and the two tables it connects.
+  const selectedEdge = useMemo(
+    () => edges.find((e) => e.id === selectedRelationshipId) ?? null,
+    [edges, selectedRelationshipId]
+  );
+
   // Column rows call onColumnClick to open the records view for their table,
   // independent of the node-level click (expand/collapse + schema selection).
   const nodesWithHandlers = useMemo(
-    () => nodes.map((n) => ({ ...n, data: { ...n.data, onColumnClick: () => setRecordsEntityId(n.id) } })),
-    [nodes]
+    () => nodes.map((n) => {
+      const isHighlighted = !!selectedEdge && (n.id === selectedEdge.source || n.id === selectedEdge.target);
+      return { ...n, data: { ...n.data, onColumnClick: () => setRecordsEntityId(n.id), isHighlighted } };
+    }),
+    [nodes, selectedEdge]
+  );
+
+  const edgesWithSelection = useMemo(
+    () => edges.map((edge) => {
+      const isSelected = edge.id === selectedRelationshipId;
+      return {
+        ...edge,
+        style: {
+          ...edge.style,
+          stroke: isSelected ? '#facc15' : edge.style?.stroke,
+          strokeWidth: isSelected ? 4 : edge.style?.strokeWidth,
+        },
+        zIndex: isSelected ? 1000 : 0,
+      };
+    }),
+    [edges, selectedRelationshipId]
   );
 
   const onNodeClick = useCallback((event, clickedNode) => {
@@ -127,7 +153,7 @@ function App() {
   }, []);
 
   const onEdgeClick = useCallback((event, clickedEdge) => {
-    setSelectedRelationshipId(clickedEdge.id);
+    setSelectedRelationshipId((prev) => (prev === clickedEdge.id ? null : clickedEdge.id));
     setSelectedEntityId(null);
   }, []);
 
@@ -140,7 +166,7 @@ function App() {
       <div className="flow-wrapper">
         <ReactFlow
           nodes={nodesWithHandlers}
-          edges={edges}
+          edges={edgesWithSelection}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onNodeClick={onNodeClick}

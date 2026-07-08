@@ -5,9 +5,10 @@ import './TableNode.css';
 export default function TableNode({ data }) {
   // Use data.isRevealed for entry/exit animations
   const visibilityClass = data.isRevealed ? 'revealed' : 'concealed';
+  const highlightClass = data.isHighlighted ? 'highlighted-connection' : '';
 
   return (
-    <div className={`table-node premium-table ${visibilityClass}`}>
+    <div className={`table-node premium-table ${visibilityClass} ${highlightClass}`}>
       <Handle type="target" position={Position.Top} className="table-handle" />
       
       <div className="table-header">
