@@ -178,8 +178,13 @@ function App() {
   }, []);
 
   const onEdgeClick = useCallback((event, clickedEdge) => {
-    setSelectedRelationshipId((prev) => (prev === clickedEdge.id ? null : clickedEdge.id));
-    setSelectedEntityId(null);
+    setSelectedRelationshipId((prev) => {
+      const next = prev === clickedEdge.id ? null : clickedEdge.id;
+      // Open the source table's panel with this relationship highlighted,
+      // instead of just spotlighting the edge with no panel content.
+      setSelectedEntityId(next ? clickedEdge.source : null);
+      return next;
+    });
   }, []);
 
   return (
