@@ -222,12 +222,19 @@
 .detail-panel__rel-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 4px 8px;
   padding: 7px 10px;
   border-radius: 7px;
   background: rgba(168, 85, 247, 0.06);
   border: 1px solid rgba(168, 85, 247, 0.15);
   font-size: 0.8rem;
+}
+
+.detail-panel__rel-from,
+.detail-panel__rel-to {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .detail-panel__rel-from {
@@ -239,6 +246,7 @@
 .detail-panel__rel-arrow {
   color: #a855f7;
   font-size: 1rem;
+  flex-shrink: 0;
 }
 
 .detail-panel__rel-to {
