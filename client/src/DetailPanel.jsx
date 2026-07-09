@@ -84,6 +84,3 @@ export default function DetailPanel({ node, onClose }) {
     </div>
   );
 }
-    </div>
-  );
-}
