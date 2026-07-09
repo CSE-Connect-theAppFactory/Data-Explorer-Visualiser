@@ -1,23 +1,29 @@
-import React from 'react';
 import './DetailPanel.css';
+import { getEntity, getFieldsForEntity, getRelationshipsForEntity } from './lookup';
 
 /**
  * Slide-in detail panel shown when a ReactFlow table node is clicked.
  * Props:
- *   node   – the selected node object (null when nothing selected)
- *   onClose – callback to close the panel
+ *   dataset                 – the active dataset ({ entities, fields, relationships })
+ *   selectedEntityId        – id of the selected table (null when nothing selected)
+ *   selectedRelationshipId  – id of the selected relationship, used to highlight it below
+ *   onClose                 – callback to close the panel
  */
-export default function DetailPanel({ node, onClose }) {
-  const isOpen = Boolean(node);
+export default function DetailPanel({ dataset, selectedEntityId, selectedRelationshipId, onClose }) {
+  const entity = selectedEntityId ? getEntity(dataset, selectedEntityId) : null;
+  const isOpen = Boolean(entity);
+  const fields = entity ? getFieldsForEntity(dataset, entity.id) : [];
+  const relationships = entity ? getRelationshipsForEntity(dataset, entity.id) : [];
+  const fkFieldIds = new Set(dataset.relationships.map((r) => `${r.from_entity}.${r.from_field}`));
 
   return (
     <div className={`detail-panel ${isOpen ? 'detail-panel--open' : ''}`}>
-      {node && (
+      {entity && (
         <>
           <div className="detail-panel__header">
             <div className="detail-panel__title">
               <span className="detail-panel__icon">🗄️</span>
-              <span>{node.data.label}</span>
+              <span>{entity.name}</span>
             </div>
             <button
               className="detail-panel__close"
@@ -31,43 +37,50 @@ export default function DetailPanel({ node, onClose }) {
           <div className="detail-panel__meta">
             <span className="detail-panel__badge">TABLE</span>
             <span className="detail-panel__col-count">
-              {node.data.columns?.length ?? 0} columns
+              {fields.length} column{fields.length === 1 ? '' : 's'}
             </span>
           </div>
 
           <div className="detail-panel__body">
             <h3 className="detail-panel__section-title">Columns</h3>
             <div className="detail-panel__columns">
-              {node.data.columns?.map((col, idx) => (
-                <div
-                  key={idx}
-                  className={`detail-panel__col-row ${col.isPrimaryKey ? 'pk' : ''} ${col.isForeignKey ? 'fk' : ''}`}
-                >
-                  <div className="detail-panel__col-left">
-                    {col.isPrimaryKey && (
-                      <span className="detail-panel__key-badge pk-badge" title="Primary Key">PK</span>
-                    )}
-                    {col.isForeignKey && (
-                      <span className="detail-panel__key-badge fk-badge" title="Foreign Key">FK</span>
-                    )}
-                    {!col.isPrimaryKey && !col.isForeignKey && (
-                      <span className="detail-panel__key-badge empty-badge"> </span>
-                    )}
-                    <span className="detail-panel__col-name">{col.name}</span>
+              {fields.map((col) => {
+                const isPrimaryKey = !!col.isPrimaryKey;
+                const isForeignKey = fkFieldIds.has(col.id);
+                return (
+                  <div
+                    key={col.id}
+                    className={`detail-panel__col-row ${isPrimaryKey ? 'pk' : ''} ${isForeignKey ? 'fk' : ''}`}
+                  >
+                    <div className="detail-panel__col-left">
+                      {isPrimaryKey && (
+                        <span className="detail-panel__key-badge pk-badge" title="Primary Key">PK</span>
+                      )}
+                      {isForeignKey && (
+                        <span className="detail-panel__key-badge fk-badge" title="Foreign Key">FK</span>
+                      )}
+                      {!isPrimaryKey && !isForeignKey && (
+                        <span className="detail-panel__key-badge empty-badge"> </span>
+                      )}
+                      <span className="detail-panel__col-name">{col.name}</span>
+                    </div>
+                    <span className="detail-panel__col-type">{col.type}</span>
                   </div>
-                  <span className="detail-panel__col-type">{col.type}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
-            {node.data.relationships && node.data.relationships.length > 0 && (
+            {relationships.length > 0 && (
               <>
                 <h3 className="detail-panel__section-title">Relationships</h3>
                 <div className="detail-panel__relationships">
-                  {node.data.relationships.map((rel, idx) => (
-                    <div key={idx} className="detail-panel__rel-row">
+                  {relationships.map((rel) => (
+                    <div
+                      key={rel.id}
+                      className={`detail-panel__rel-row ${rel.id === selectedRelationshipId ? 'detail-panel__rel-row--selected' : ''}`}
+                    >
                       <span className="detail-panel__rel-from">
-                        {rel.from_field}
+                        {rel.from_entity}.{rel.from_field}
                       </span>
                       <span className="detail-panel__rel-arrow">→</span>
                       <span className="detail-panel__rel-to">

@@ -2,55 +2,69 @@
 // React Flow's { nodes, edges }, so any dataset can drive the graph.
 
 import { MarkerType } from '@xyflow/react';
+import dagre from 'dagre';
+
+// Matches TableNode's card width (client/src/TableNode.css) plus the fixed
+// per-row/header/padding sizes, so dagre reserves exactly enough space
+// between cards and never overlaps them regardless of column count.
+const NODE_WIDTH = 240;
+const HEADER_HEIGHT = 44;
+const ROW_HEIGHT = 28;
+const BODY_PADDING = 24;
 
 export function buildGraph(dataset) {
   const fkFieldIds = new Set(dataset.relationships.map((r) => `${r.from_entity}.${r.from_field}`));
+  // A relationship's target field needs a handle to connect to even when
+  // isPrimaryKey wasn't captured on it (e.g. a parser that skipped PK
+  // detection) — otherwise the edge silently fails to render.
+  const relationshipTargetFieldIds = new Set(
+    dataset.relationships.map((r) => `${r.to_entity}.${r.to_field}`)
+  );
 
-  // Undirected adjacency between entities, used to lay tables out by how
-  // closely related they are rather than by array order. Self-references
-  // don't affect layout — a table doesn't need to be placed relative to itself.
-  const neighborsOf = new Map(dataset.entities.map((e) => [e.id, new Set()]));
-  for (const r of dataset.relationships) {
-    if (r.from_entity === r.to_entity) continue;
-    neighborsOf.get(r.from_entity)?.add(r.to_entity);
-    neighborsOf.get(r.to_entity)?.add(r.from_entity);
-  }
+  const columnsByEntity = new Map(
+    dataset.entities.map((entity) => [
+      entity.id,
+      dataset.fields
+        .filter((f) => f.entity_id === entity.id)
+        .map((f) => ({
+          name: f.name,
+          type: f.type,
+          isPrimaryKey: !!f.isPrimaryKey,
+          isForeignKey: fkFieldIds.has(f.id),
+          needsTargetHandle: !!f.isPrimaryKey || relationshipTargetFieldIds.has(f.id),
+        })),
+    ])
+  );
 
-  // BFS distance from the root (same root App.jsx reveals first) so directly
-  // connected tables land in adjacent columns. This keeps unrelated tables
-  // out of the straight-line path between two tables that reference each
-  // other, which is what caused connector lines to cut through other cards
-  // under the old index-based 3-column grid.
-  const rootId = dataset.entities[0]?.id;
-  const depthOf = new Map();
-  if (rootId) {
-    depthOf.set(rootId, 0);
-    const queue = [rootId];
-    while (queue.length > 0) {
-      const currentId = queue.shift();
-      const depth = depthOf.get(currentId);
-      for (const neighborId of neighborsOf.get(currentId) ?? []) {
-        if (!depthOf.has(neighborId)) {
-          depthOf.set(neighborId, depth + 1);
-          queue.push(neighborId);
-        }
-      }
-    }
-  }
+  // Auto-layout via dagre instead of a hand-rolled grid: it ranks tables by
+  // FK relationships (left-to-right) and packs rows within a rank so cards
+  // never overlap and unrelated tables don't end up on one straight line.
+  const g = new dagre.graphlib.Graph();
+  g.setGraph({ rankdir: 'LR', nodesep: 60, ranksep: 160 });
+  g.setDefaultEdgeLabel(() => ({}));
 
-  // Entities unreachable from the root (disconnected data) still need a
-  // column; place them after the deepest reachable tier.
-  const maxDepth = Math.max(0, ...depthOf.values());
-  let nextFallbackDepth = maxDepth + 1;
-
-  const rowCountByDepth = new Map();
-  const positions = new Map();
   for (const entity of dataset.entities) {
-    const depth = depthOf.has(entity.id) ? depthOf.get(entity.id) : nextFallbackDepth++;
-    const row = rowCountByDepth.get(depth) ?? 0;
-    rowCountByDepth.set(depth, row + 1);
-    positions.set(entity.id, { x: depth * 380 + 100, y: row * 300 + 100 });
+    const columnCount = columnsByEntity.get(entity.id)?.length ?? 0;
+    g.setNode(entity.id, {
+      width: NODE_WIDTH,
+      height: HEADER_HEIGHT + BODY_PADDING + columnCount * ROW_HEIGHT,
+    });
   }
+  for (const r of dataset.relationships) {
+    // Self-references don't affect ranking — a table doesn't need to be
+    // placed relative to itself.
+    if (r.from_entity === r.to_entity) continue;
+    g.setEdge(r.from_entity, r.to_entity);
+  }
+  dagre.layout(g);
+
+  // React Flow positions are top-left; dagre returns centers.
+  const positions = new Map(
+    dataset.entities.map((entity) => {
+      const { x, y, width, height } = g.node(entity.id);
+      return [entity.id, { x: x - width / 2, y: y - height / 2 }];
+    })
+  );
 
   const nodes = dataset.entities.map((entity) => ({
     id: entity.id,
@@ -58,14 +72,7 @@ export function buildGraph(dataset) {
     position: positions.get(entity.id),
     data: {
       label: entity.name,
-      columns: dataset.fields
-        .filter((f) => f.entity_id === entity.id)
-        .map((f) => ({
-          name: f.name,
-          type: f.type,
-          isPrimaryKey: !!f.isPrimaryKey,
-          isForeignKey: fkFieldIds.has(f.id),
-        })),
+      columns: columnsByEntity.get(entity.id),
     },
   }));
 

@@ -244,13 +244,9 @@
 .detail-panel__rel-to {
   color: #c084fc;
   font-family: 'Courier New', monospace;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
-  color: #e2e8f0;
-  font-weight: 500;
-}
-
+.detail-panel__rel-row--selected {
+  border-color: rgba(250, 204, 21, 0.5);
+  background: rgba(250, 204, 21, 0.08);
 }

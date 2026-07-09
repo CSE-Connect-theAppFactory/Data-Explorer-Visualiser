@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { ReactFlow, Controls, Background, BackgroundVariant, useNodesState, useEdgesState } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './App.css';
@@ -9,6 +9,7 @@ import SelfLoopEdge from './SelfLoopEdge';
 import { buildGraph } from './graphBuilder';
 import sampleDataset1 from './parser/output.json';
 import sampleDataset2 from './parser/output2.json';
+import sampleDataset3 from './parser/output3.json';
 
 const nodeTypes = {
   tableNode: TableNode,
@@ -18,8 +19,15 @@ const edgeTypes = {
   selfLoop: SelfLoopEdge,
 };
 
+const DATASETS = [
+  { key: 'sample1', label: 'Sample: customers/orders/products', data: sampleDataset1 },
+  { key: 'sample2', label: 'Sample: departments/employees/projects', data: sampleDataset2 },
+  { key: 'sample3', label: 'Sample: e-commerce (users/products/orders/reviews)', data: sampleDataset3 },
+];
+
 function App() {
-  const [dataset, setDataset] = useState(sampleDataset1);
+  const [datasetKey, setDatasetKey] = useState(DATASETS[0].key);
+  const dataset = DATASETS.find((d) => d.key === datasetKey).data;
   const [selectedEntityId, setSelectedEntityId] = useState(null);
   const [selectedRelationshipId, setSelectedRelationshipId] = useState(null);
   const [recordsEntityId, setRecordsEntityId] = useState(null);
@@ -30,6 +38,7 @@ function App() {
 
   const [nodes, setNodes, onNodesChange] = useNodesState(baseGraph.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(baseGraph.edges);
+  const reactFlowInstanceRef = useRef(null);
 
   // Track which nodes the user has expanded
   const [expandedNodeIds, setExpandedNodeIds] = useState(new Set());
@@ -103,6 +112,13 @@ function App() {
       })
     );
   }, [expandedNodeIds, baseGraph, rootId, setNodes, setEdges]);
+
+  // Dagre computes different node coordinates per dataset, so the camera
+  // must re-fit on every dataset switch instead of relying on ReactFlow's
+  // fitView prop, which only runs once on mount.
+  useEffect(() => {
+    reactFlowInstanceRef.current?.fitView({ duration: 300 });
+  }, [baseGraph]);
 
   // The edge backing the current relationship selection, used to highlight
   // both it and the two tables it connects.
@@ -180,6 +196,7 @@ function App() {
           onEdgesChange={onEdgesChange}
           onNodeClick={onNodeClick}
           onEdgeClick={onEdgeClick}
+          onInit={(instance) => { reactFlowInstanceRef.current = instance; }}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           fitView
@@ -190,19 +207,19 @@ function App() {
         </ReactFlow>
         <div className="data-source-controls">
           <select
-            value={dataset === sampleDataset1 ? 'sample1' : 'sample2'}
-            onChange={(e) => {
-              setDataset(e.target.value === 'sample1' ? sampleDataset1 : sampleDataset2);
-            }}
+            value={datasetKey}
+            onChange={(e) => setDatasetKey(e.target.value)}
           >
-            <option value="sample1">Sample: customers/orders/products</option>
-            <option value="sample2">Sample: departments/employees/projects</option>
+            {DATASETS.map((d) => (
+              <option key={d.key} value={d.key}>{d.label}</option>
+            ))}
           </select>
         </div>
         <DetailPanel
           dataset={dataset}
           selectedEntityId={selectedEntityId}
           selectedRelationshipId={selectedRelationshipId}
+          onClose={() => setSelectedEntityId(null)}
         />
         {recordsEntityId && (
           <RecordsPanel

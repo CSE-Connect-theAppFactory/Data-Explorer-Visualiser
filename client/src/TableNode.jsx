@@ -34,7 +34,7 @@ export default function TableNode({ id, data }) {
               data.onColumnClick?.();
             }}
           >
-            {col.isPrimaryKey && (
+            {col.needsTargetHandle && (
               <>
                 <Handle type="target" position={Position.Left} id={`${col.name}-target-left`} className="row-handle" />
                 <Handle type="target" position={Position.Right} id={`${col.name}-target-right`} className="row-handle" />
