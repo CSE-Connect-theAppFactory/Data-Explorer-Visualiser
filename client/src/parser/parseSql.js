@@ -203,7 +203,50 @@ export function convertToTeamBModel(parseResult) {
  */
 export function parseSqlFile(sqlFilePath) {
   const sqlText = fs.readFileSync(sqlFilePath, "utf-8");
-  return parseSqlText(sqlText);
+  const parser = new Parser();
+  const ast = parser.astify(sqlText, { database: "MySQL" });
+
+  // astify returns a single object for one statement, or an array for multiple
+  const statements = Array.isArray(ast) ? ast : [ast];
+
+  const tables = [];
+  const relationships = [];
+
+  for (const stmt of statements) {
+    // Only process CREATE TABLE statements
+    if (stmt.type !== "create") continue;
+
+    const tableName = stmt.table[0].table;
+
+    const columns = [];
+    for (const def of stmt.create_definitions) {
+      // Skip constraints (FOREIGN KEY, PRIMARY KEY, etc.) — only keep column defs
+      if (def.resource === "constraint") continue;
+
+      const colName = def.column.column;
+
+      // Build a readable type string from the dataType field
+      // node-sql-parser puts precision in .length and scale in .scale
+      let colType = def.definition.dataType;
+      if (def.definition.length != null) {
+        if (def.definition.scale != null) {
+          colType += `(${def.definition.length},${def.definition.scale})`;
+        } else {
+          colType += `(${def.definition.length})`;
+        }
+      }
+
+      columns.push({ name: colName, type: colType });
+    }
+
+    tables.push({ table: tableName, columns });
+
+    // Extract foreign keys from this table
+    const fkRels = extractForeignKeys(stmt, tableName);
+    relationships.push(...fkRels);
+  }
+
+  return { tables, relationships };
 }
 
 /**
@@ -219,5 +262,15 @@ export function parseSampleFile() {
  */
 export function parseSample2File() {
   const samplePath = path.join(__dirname, "sample2.sql");
+  return parseSqlFile(samplePath);
+}
+
+/**
+ * Convenience: parse the third (messier) sample.sql file.
+ * Week 3 stress-test: named constraints, DECIMAL, TEXT, BOOLEAN, TIMESTAMP,
+ * AUTO_INCREMENT, NOT NULL, DEFAULT, self-referential FK, junction table.
+ */
+export function parseSample3File() {
+  const samplePath = path.join(__dirname, "sample3.sql");
   return parseSqlFile(samplePath);
 }
