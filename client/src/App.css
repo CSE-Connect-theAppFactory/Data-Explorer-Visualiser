@@ -1,3 +1,7 @@
+:root {
+  --detail-panel-width: 320px;
+}
+
 .app-container {
   display: flex;
   flex-direction: column;
@@ -37,6 +41,15 @@
 .flow-wrapper {
   flex-grow: 1;
   position: relative;
+}
+
+/* Reserves space for the always-visible detail panel so ReactFlow's fitView
+   and dagre's layout treat it as the actual visible canvas area - otherwise
+   nodes can be laid out underneath the panel, silently swallowing clicks. */
+.canvas-area {
+  position: absolute;
+  inset: 0;
+  right: var(--detail-panel-width);
 }
 
 .data-source-controls {

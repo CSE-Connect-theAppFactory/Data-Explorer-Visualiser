@@ -194,22 +194,24 @@ function App() {
         <p>Proof of Concept: Drill Down ERD</p>
       </div>
       <div className="flow-wrapper">
-        <ReactFlow
-          nodes={nodesWithHandlers}
-          edges={edgesWithSelection}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onNodeClick={onNodeClick}
-          onEdgeClick={onEdgeClick}
-          onInit={(instance) => { reactFlowInstanceRef.current = instance; }}
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          fitView
-          colorMode="dark"
-        >
-          <Background variant={BackgroundVariant.Dots} gap={24} size={2} color="#4c1d95" />
-          <Controls />
-        </ReactFlow>
+        <div className="canvas-area">
+          <ReactFlow
+            nodes={nodesWithHandlers}
+            edges={edgesWithSelection}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onNodeClick={onNodeClick}
+            onEdgeClick={onEdgeClick}
+            onInit={(instance) => { reactFlowInstanceRef.current = instance; }}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            fitView
+            colorMode="dark"
+          >
+            <Background variant={BackgroundVariant.Dots} gap={24} size={2} color="#4c1d95" />
+            <Controls />
+          </ReactFlow>
+        </div>
         <div className="data-source-controls">
           <select
             value={datasetKey}
