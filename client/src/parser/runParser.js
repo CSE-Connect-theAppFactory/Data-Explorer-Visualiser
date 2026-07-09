@@ -1,4 +1,4 @@
-import { parseSampleFile, parseSample2File, parseSample3File } from "./parseSql.js";
+import { parseSampleFile, parseSample2File, parseSample3File, convertToTeamBModel } from "./parseSql.js";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -41,12 +41,12 @@ function parseAndExport(parserFn, outputFileName) {
 
 // Parse all three sample files
 console.log("\n====== SAMPLE 1 ======");
-const model1 = parseAndExport(parseSampleFile, "output.json");
+parseAndExport(parseSampleFile, "output.json");
 
 console.log("\n====== SAMPLE 2 ======");
 try {
-  const model2 = parseAndExport(parseSample2File, "output2.json");
-} catch (err) {
+  parseAndExport(parseSample2File, "output2.json");
+} catch {
   console.log(
     "⚠️  sample2.sql not found yet. Run this again after creating it.",
   );
@@ -54,7 +54,7 @@ try {
 
 console.log("\n====== SAMPLE 3 (Week 3 stress test) ======");
 try {
-  const model3 = parseAndExport(parseSample3File, "output3.json");
+  parseAndExport(parseSample3File, "output3.json");
 } catch (err) {
   console.error("❌ sample3.sql parse failed:", err.message);
 }

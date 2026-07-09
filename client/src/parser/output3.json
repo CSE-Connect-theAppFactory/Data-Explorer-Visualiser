@@ -36,217 +36,253 @@
       "id": "users.id",
       "entity_id": "users",
       "name": "id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": true
     },
     {
       "id": "users.username",
       "entity_id": "users",
       "name": "username",
-      "type": "VARCHAR(50)"
+      "type": "VARCHAR(50)",
+      "isPrimaryKey": false
     },
     {
       "id": "users.email",
       "entity_id": "users",
       "name": "email",
-      "type": "VARCHAR(255)"
+      "type": "VARCHAR(255)",
+      "isPrimaryKey": false
     },
     {
       "id": "users.bio",
       "entity_id": "users",
       "name": "bio",
-      "type": "TEXT"
+      "type": "TEXT",
+      "isPrimaryKey": false
     },
     {
       "id": "users.is_active",
       "entity_id": "users",
       "name": "is_active",
-      "type": "BOOLEAN"
+      "type": "BOOLEAN",
+      "isPrimaryKey": false
     },
     {
       "id": "users.balance",
       "entity_id": "users",
       "name": "balance",
-      "type": "DECIMAL(10,2)"
+      "type": "DECIMAL(10,2)",
+      "isPrimaryKey": false
     },
     {
       "id": "users.created_at",
       "entity_id": "users",
       "name": "created_at",
-      "type": "TIMESTAMP"
+      "type": "TIMESTAMP",
+      "isPrimaryKey": false
     },
     {
       "id": "categories.id",
       "entity_id": "categories",
       "name": "id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": true
     },
     {
       "id": "categories.name",
       "entity_id": "categories",
       "name": "name",
-      "type": "VARCHAR(100)"
+      "type": "VARCHAR(100)",
+      "isPrimaryKey": false
     },
     {
       "id": "categories.slug",
       "entity_id": "categories",
       "name": "slug",
-      "type": "VARCHAR(100)"
+      "type": "VARCHAR(100)",
+      "isPrimaryKey": false
     },
     {
       "id": "categories.parent_id",
       "entity_id": "categories",
       "name": "parent_id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "products.id",
       "entity_id": "products",
       "name": "id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": true
     },
     {
       "id": "products.title",
       "entity_id": "products",
       "name": "title",
-      "type": "VARCHAR(200)"
+      "type": "VARCHAR(200)",
+      "isPrimaryKey": false
     },
     {
       "id": "products.description",
       "entity_id": "products",
       "name": "description",
-      "type": "TEXT"
+      "type": "TEXT",
+      "isPrimaryKey": false
     },
     {
       "id": "products.price",
       "entity_id": "products",
       "name": "price",
-      "type": "DECIMAL(10,2)"
+      "type": "DECIMAL(10,2)",
+      "isPrimaryKey": false
     },
     {
       "id": "products.stock_qty",
       "entity_id": "products",
       "name": "stock_qty",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "products.is_visible",
       "entity_id": "products",
       "name": "is_visible",
-      "type": "BOOLEAN"
+      "type": "BOOLEAN",
+      "isPrimaryKey": false
     },
     {
       "id": "products.category_id",
       "entity_id": "products",
       "name": "category_id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "products.created_by",
       "entity_id": "products",
       "name": "created_by",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "orders.id",
       "entity_id": "orders",
       "name": "id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": true
     },
     {
       "id": "orders.user_id",
       "entity_id": "orders",
       "name": "user_id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "orders.total_amount",
       "entity_id": "orders",
       "name": "total_amount",
-      "type": "DECIMAL(12,2)"
+      "type": "DECIMAL(12,2)",
+      "isPrimaryKey": false
     },
     {
       "id": "orders.status",
       "entity_id": "orders",
       "name": "status",
-      "type": "VARCHAR(20)"
+      "type": "VARCHAR(20)",
+      "isPrimaryKey": false
     },
     {
       "id": "orders.notes",
       "entity_id": "orders",
       "name": "notes",
-      "type": "TEXT"
+      "type": "TEXT",
+      "isPrimaryKey": false
     },
     {
       "id": "orders.placed_at",
       "entity_id": "orders",
       "name": "placed_at",
-      "type": "TIMESTAMP"
+      "type": "TIMESTAMP",
+      "isPrimaryKey": false
     },
     {
       "id": "order_items.id",
       "entity_id": "order_items",
       "name": "id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": true
     },
     {
       "id": "order_items.order_id",
       "entity_id": "order_items",
       "name": "order_id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "order_items.product_id",
       "entity_id": "order_items",
       "name": "product_id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "order_items.quantity",
       "entity_id": "order_items",
       "name": "quantity",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "order_items.unit_price",
       "entity_id": "order_items",
       "name": "unit_price",
-      "type": "DECIMAL(10,2)"
+      "type": "DECIMAL(10,2)",
+      "isPrimaryKey": false
     },
     {
       "id": "reviews.id",
       "entity_id": "reviews",
       "name": "id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": true
     },
     {
       "id": "reviews.user_id",
       "entity_id": "reviews",
       "name": "user_id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "reviews.product_id",
       "entity_id": "reviews",
       "name": "product_id",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "reviews.rating",
       "entity_id": "reviews",
       "name": "rating",
-      "type": "INT"
+      "type": "INT",
+      "isPrimaryKey": false
     },
     {
       "id": "reviews.body",
       "entity_id": "reviews",
       "name": "body",
-      "type": "TEXT"
+      "type": "TEXT",
+      "isPrimaryKey": false
     },
     {
       "id": "reviews.created_at",
       "entity_id": "reviews",
       "name": "created_at",
-      "type": "TIMESTAMP"
+      "type": "TIMESTAMP",
+      "isPrimaryKey": false
     }
   ],
   "relationships": [
@@ -314,5 +350,6 @@
       "to_field": "id",
       "type": "foreign_key"
     }
-  ]
+  ],
+  "records": []
 }
