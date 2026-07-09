@@ -1,0 +1,318 @@
+{
+  "entities": [
+    {
+      "id": "users",
+      "name": "users",
+      "type": "table"
+    },
+    {
+      "id": "categories",
+      "name": "categories",
+      "type": "table"
+    },
+    {
+      "id": "products",
+      "name": "products",
+      "type": "table"
+    },
+    {
+      "id": "orders",
+      "name": "orders",
+      "type": "table"
+    },
+    {
+      "id": "order_items",
+      "name": "order_items",
+      "type": "table"
+    },
+    {
+      "id": "reviews",
+      "name": "reviews",
+      "type": "table"
+    }
+  ],
+  "fields": [
+    {
+      "id": "users.id",
+      "entity_id": "users",
+      "name": "id",
+      "type": "INT"
+    },
+    {
+      "id": "users.username",
+      "entity_id": "users",
+      "name": "username",
+      "type": "VARCHAR(50)"
+    },
+    {
+      "id": "users.email",
+      "entity_id": "users",
+      "name": "email",
+      "type": "VARCHAR(255)"
+    },
+    {
+      "id": "users.bio",
+      "entity_id": "users",
+      "name": "bio",
+      "type": "TEXT"
+    },
+    {
+      "id": "users.is_active",
+      "entity_id": "users",
+      "name": "is_active",
+      "type": "BOOLEAN"
+    },
+    {
+      "id": "users.balance",
+      "entity_id": "users",
+      "name": "balance",
+      "type": "DECIMAL(10,2)"
+    },
+    {
+      "id": "users.created_at",
+      "entity_id": "users",
+      "name": "created_at",
+      "type": "TIMESTAMP"
+    },
+    {
+      "id": "categories.id",
+      "entity_id": "categories",
+      "name": "id",
+      "type": "INT"
+    },
+    {
+      "id": "categories.name",
+      "entity_id": "categories",
+      "name": "name",
+      "type": "VARCHAR(100)"
+    },
+    {
+      "id": "categories.slug",
+      "entity_id": "categories",
+      "name": "slug",
+      "type": "VARCHAR(100)"
+    },
+    {
+      "id": "categories.parent_id",
+      "entity_id": "categories",
+      "name": "parent_id",
+      "type": "INT"
+    },
+    {
+      "id": "products.id",
+      "entity_id": "products",
+      "name": "id",
+      "type": "INT"
+    },
+    {
+      "id": "products.title",
+      "entity_id": "products",
+      "name": "title",
+      "type": "VARCHAR(200)"
+    },
+    {
+      "id": "products.description",
+      "entity_id": "products",
+      "name": "description",
+      "type": "TEXT"
+    },
+    {
+      "id": "products.price",
+      "entity_id": "products",
+      "name": "price",
+      "type": "DECIMAL(10,2)"
+    },
+    {
+      "id": "products.stock_qty",
+      "entity_id": "products",
+      "name": "stock_qty",
+      "type": "INT"
+    },
+    {
+      "id": "products.is_visible",
+      "entity_id": "products",
+      "name": "is_visible",
+      "type": "BOOLEAN"
+    },
+    {
+      "id": "products.category_id",
+      "entity_id": "products",
+      "name": "category_id",
+      "type": "INT"
+    },
+    {
+      "id": "products.created_by",
+      "entity_id": "products",
+      "name": "created_by",
+      "type": "INT"
+    },
+    {
+      "id": "orders.id",
+      "entity_id": "orders",
+      "name": "id",
+      "type": "INT"
+    },
+    {
+      "id": "orders.user_id",
+      "entity_id": "orders",
+      "name": "user_id",
+      "type": "INT"
+    },
+    {
+      "id": "orders.total_amount",
+      "entity_id": "orders",
+      "name": "total_amount",
+      "type": "DECIMAL(12,2)"
+    },
+    {
+      "id": "orders.status",
+      "entity_id": "orders",
+      "name": "status",
+      "type": "VARCHAR(20)"
+    },
+    {
+      "id": "orders.notes",
+      "entity_id": "orders",
+      "name": "notes",
+      "type": "TEXT"
+    },
+    {
+      "id": "orders.placed_at",
+      "entity_id": "orders",
+      "name": "placed_at",
+      "type": "TIMESTAMP"
+    },
+    {
+      "id": "order_items.id",
+      "entity_id": "order_items",
+      "name": "id",
+      "type": "INT"
+    },
+    {
+      "id": "order_items.order_id",
+      "entity_id": "order_items",
+      "name": "order_id",
+      "type": "INT"
+    },
+    {
+      "id": "order_items.product_id",
+      "entity_id": "order_items",
+      "name": "product_id",
+      "type": "INT"
+    },
+    {
+      "id": "order_items.quantity",
+      "entity_id": "order_items",
+      "name": "quantity",
+      "type": "INT"
+    },
+    {
+      "id": "order_items.unit_price",
+      "entity_id": "order_items",
+      "name": "unit_price",
+      "type": "DECIMAL(10,2)"
+    },
+    {
+      "id": "reviews.id",
+      "entity_id": "reviews",
+      "name": "id",
+      "type": "INT"
+    },
+    {
+      "id": "reviews.user_id",
+      "entity_id": "reviews",
+      "name": "user_id",
+      "type": "INT"
+    },
+    {
+      "id": "reviews.product_id",
+      "entity_id": "reviews",
+      "name": "product_id",
+      "type": "INT"
+    },
+    {
+      "id": "reviews.rating",
+      "entity_id": "reviews",
+      "name": "rating",
+      "type": "INT"
+    },
+    {
+      "id": "reviews.body",
+      "entity_id": "reviews",
+      "name": "body",
+      "type": "TEXT"
+    },
+    {
+      "id": "reviews.created_at",
+      "entity_id": "reviews",
+      "name": "created_at",
+      "type": "TIMESTAMP"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "categories.parent_id->categories.id",
+      "from_entity": "categories",
+      "from_field": "parent_id",
+      "to_entity": "categories",
+      "to_field": "id",
+      "type": "foreign_key"
+    },
+    {
+      "id": "products.category_id->categories.id",
+      "from_entity": "products",
+      "from_field": "category_id",
+      "to_entity": "categories",
+      "to_field": "id",
+      "type": "foreign_key"
+    },
+    {
+      "id": "products.created_by->users.id",
+      "from_entity": "products",
+      "from_field": "created_by",
+      "to_entity": "users",
+      "to_field": "id",
+      "type": "foreign_key"
+    },
+    {
+      "id": "orders.user_id->users.id",
+      "from_entity": "orders",
+      "from_field": "user_id",
+      "to_entity": "users",
+      "to_field": "id",
+      "type": "foreign_key"
+    },
+    {
+      "id": "order_items.order_id->orders.id",
+      "from_entity": "order_items",
+      "from_field": "order_id",
+      "to_entity": "orders",
+      "to_field": "id",
+      "type": "foreign_key"
+    },
+    {
+      "id": "order_items.product_id->products.id",
+      "from_entity": "order_items",
+      "from_field": "product_id",
+      "to_entity": "products",
+      "to_field": "id",
+      "type": "foreign_key"
+    },
+    {
+      "id": "reviews.user_id->users.id",
+      "from_entity": "reviews",
+      "from_field": "user_id",
+      "to_entity": "users",
+      "to_field": "id",
+      "type": "foreign_key"
+    },
+    {
+      "id": "reviews.product_id->products.id",
+      "from_entity": "reviews",
+      "from_field": "product_id",
+      "to_entity": "products",
+      "to_field": "id",
+      "type": "foreign_key"
+    }
+  ]
+}

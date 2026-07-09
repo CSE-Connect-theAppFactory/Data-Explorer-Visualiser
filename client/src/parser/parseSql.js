@@ -74,9 +74,14 @@ export function parseSqlFile(sqlFilePath) {
       const colName = def.column.column;
 
       // Build a readable type string from the dataType field
+      // node-sql-parser puts precision in .length and scale in .scale
       let colType = def.definition.dataType;
-      if (def.definition.length) {
-        colType += `(${def.definition.length})`;
+      if (def.definition.length != null) {
+        if (def.definition.scale != null) {
+          colType += `(${def.definition.length},${def.definition.scale})`;
+        } else {
+          colType += `(${def.definition.length})`;
+        }
       }
 
       columns.push({ name: colName, type: colType });
@@ -105,5 +110,15 @@ export function parseSampleFile() {
  */
 export function parseSample2File() {
   const samplePath = path.join(__dirname, "sample2.sql");
+  return parseSqlFile(samplePath);
+}
+
+/**
+ * Convenience: parse the third (messier) sample.sql file.
+ * Week 3 stress-test: named constraints, DECIMAL, TEXT, BOOLEAN, TIMESTAMP,
+ * AUTO_INCREMENT, NOT NULL, DEFAULT, self-referential FK, junction table.
+ */
+export function parseSample3File() {
+  const samplePath = path.join(__dirname, "sample3.sql");
   return parseSqlFile(samplePath);
 }

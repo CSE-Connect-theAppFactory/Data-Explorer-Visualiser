@@ -1,127 +1,136 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { ReactFlow, Controls, Background, BackgroundVariant, useNodesState, useEdgesState } from '@xyflow/react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import {
+  ReactFlow,
+  Controls,
+  Background,
+  BackgroundVariant,
+  useNodesState,
+  useEdgesState,
+} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './App.css';
 import TableNode from './TableNode';
+import DetailPanel from './DetailPanel';
 
-const nodeTypes = {
-  tableNode: TableNode,
-};
+// ── Import parser output JSON directly (Vite handles JSON imports) ──────────
+// Switch this import to use a different schema (output.json, output2.json, output3.json)
+import schemaData from './parser/output3.json';
 
-const initialNodes = [
-  { 
-    id: 'users', 
-    type: 'tableNode',
-    position: { x: 100, y: 100 }, 
-    data: { 
-      label: 'Users',
-      columns: [
-        { name: 'id', type: 'UUID', isPrimaryKey: true },
-        { name: 'username', type: 'VARCHAR(50)' },
-        { name: 'email', type: 'VARCHAR(255)' },
-        { name: 'created_at', type: 'TIMESTAMP' },
-      ]
-    },
-  },
-  { 
-    id: 'orders', 
-    type: 'tableNode',
-    position: { x: 450, y: 100 }, 
-    data: { 
-      label: 'Orders',
-      columns: [
-        { name: 'id', type: 'UUID', isPrimaryKey: true },
-        { name: 'user_id', type: 'UUID', isForeignKey: true },
-        { name: 'total_amount', type: 'DECIMAL(10,2)' },
-        { name: 'status', type: 'VARCHAR(20)' },
-        { name: 'created_at', type: 'TIMESTAMP' },
-      ]
-    },
-  },
-  { 
-    id: 'products', 
-    type: 'tableNode',
-    position: { x: 100, y: 400 }, 
-    data: { 
-      label: 'Products',
-      columns: [
-        { name: 'id', type: 'UUID', isPrimaryKey: true },
-        { name: 'name', type: 'VARCHAR(100)' },
-        { name: 'description', type: 'TEXT' },
-        { name: 'price', type: 'DECIMAL(10,2)' },
-        { name: 'stock', type: 'INTEGER' },
-      ]
-    },
-  },
-  { 
-    id: 'order_items', 
-    type: 'tableNode',
-    position: { x: 450, y: 400 }, 
-    data: { 
-      label: 'Order_Items',
-      columns: [
-        { name: 'id', type: 'UUID', isPrimaryKey: true },
-        { name: 'order_id', type: 'UUID', isForeignKey: true },
-        { name: 'product_id', type: 'UUID', isForeignKey: true },
-        { name: 'quantity', type: 'INTEGER' },
-        { name: 'unit_price', type: 'DECIMAL(10,2)' },
-      ]
-    },
-  },
-];
+const nodeTypes = { tableNode: TableNode };
 
-const initialEdges = [
-  { 
-    id: 'e-users-orders', 
-    source: 'users', 
-    target: 'orders', 
+// ── JSON → ReactFlow conversion ──────────────────────────────────────────────
+
+/**
+ * Determine which column names in a given table are primary keys.
+ * Heuristic: a field named "id" with no FK pointing to it is treated as PK.
+ * node-sql-parser doesn't emit PK info into the JSON shape, so we infer:
+ *   – A column called "id" in any table is a PK.
+ */
+function inferPrimaryKey(columnName) {
+  return columnName === 'id';
+}
+
+/**
+ * Build ReactFlow nodes + edges from the { entities, fields, relationships } JSON model.
+ */
+function buildGraph(schema) {
+  const { entities, fields, relationships } = schema;
+
+  // Index fields by entity_id for quick lookup
+  const fieldsByEntity = {};
+  for (const field of fields) {
+    if (!fieldsByEntity[field.entity_id]) fieldsByEntity[field.entity_id] = [];
+    fieldsByEntity[field.entity_id].push(field);
+  }
+
+  // Index relationships by from_entity for Detail Panel usage
+  const relsByEntity = {};
+  for (const rel of relationships) {
+    if (!relsByEntity[rel.from_entity]) relsByEntity[rel.from_entity] = [];
+    relsByEntity[rel.from_entity].push(rel);
+  }
+
+  // Build a set of FK column ids: "<entity>.<field>"
+  const fkSet = new Set(
+    relationships.map((r) => `${r.from_entity}.${r.from_field}`)
+  );
+
+  // ── Nodes ──────────────────────────────────────────────────────────────────
+  // Auto-layout: arrange in a grid (4 columns)
+  const COLS = 3;
+  const H_GAP = 310;
+  const V_GAP = 340;
+
+  const nodes = entities.map((entity, idx) => {
+    const col = idx % COLS;
+    const row = Math.floor(idx / COLS);
+
+    const columns = (fieldsByEntity[entity.id] ?? []).map((f) => ({
+      name: f.name,
+      type: f.type,
+      isPrimaryKey: inferPrimaryKey(f.name),
+      isForeignKey: fkSet.has(`${entity.id}.${f.name}`),
+    }));
+
+    return {
+      id: entity.id,
+      type: 'tableNode',
+      position: { x: col * H_GAP + 60, y: row * V_GAP + 60 },
+      data: {
+        label: entity.name,
+        columns,
+        // Attach outgoing relationships so the Detail Panel can render them
+        relationships: relsByEntity[entity.id] ?? [],
+        // Visibility: first entity is always revealed, rest start concealed
+        isRevealed: idx === 0,
+      },
+    };
+  });
+
+  // ── Edges ──────────────────────────────────────────────────────────────────
+  const edges = relationships.map((rel) => ({
+    id: rel.id,
+    source: rel.from_entity,
+    target: rel.to_entity,
     animated: true,
     style: { stroke: '#38bdf8', strokeWidth: 2 },
-    hidden: true
-  },
-  { 
-    id: 'e-orders-order_items', 
-    source: 'orders', 
-    target: 'order_items', 
-    animated: true,
-    style: { stroke: '#38bdf8', strokeWidth: 2 },
-    hidden: true
-  },
-  { 
-    id: 'e-products-order_items', 
-    source: 'products', 
-    target: 'order_items', 
-    animated: true,
-    style: { stroke: '#38bdf8', strokeWidth: 2 },
-    hidden: true
-  },
-];
+    hidden: true, // Start hidden; revealed by the drill-down interaction
+  }));
+
+  return { nodes, edges };
+}
+
+// Pre-compute graph from imported JSON
+const { nodes: initialNodes, edges: initialEdges } = buildGraph(schemaData);
+
+// ── App Component ────────────────────────────────────────────────────────────
 
 function App() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  
+
   // Track which nodes the user has expanded
   const [expandedNodeIds, setExpandedNodeIds] = useState(new Set());
 
+  // Detail panel state
+  const [selectedNode, setSelectedNode] = useState(null);
+
   // Automatically compute graph visibility based on what's expanded
   useEffect(() => {
-    const visibleNodes = new Set(['users']); // Root is always visible
-    
+    const visibleNodes = new Set([initialNodes[0]?.id]); // Root is always visible
+
     // Breadth-first search to find all reachable visible nodes
-    let queue = ['users'];
-    let visited = new Set(['users']);
+    let queue = [initialNodes[0]?.id];
+    let visited = new Set([initialNodes[0]?.id]);
 
     while (queue.length > 0) {
       const currentId = queue.shift();
-      
-      // If this visible node is also expanded, its neighbors become visible
+
       if (expandedNodeIds.has(currentId)) {
-        // Find neighbors
         const neighbors = initialEdges
-          .filter(e => e.source === currentId || e.target === currentId)
-          .map(e => e.source === currentId ? e.target : e.source);
-          
+          .filter((e) => e.source === currentId || e.target === currentId)
+          .map((e) => (e.source === currentId ? e.target : e.source));
+
         for (const neighbor of neighbors) {
           if (!visited.has(neighbor)) {
             visited.add(neighbor);
@@ -132,70 +141,89 @@ function App() {
       }
     }
 
-    // Update nodes visibility using our custom isRevealed property for CSS transitions
-    setNodes((nds) => 
+    // Update node visibility
+    setNodes((nds) =>
       nds.map((n) => ({
         ...n,
-        hidden: false, // Never unmount them so we can animate out
+        hidden: false,
         data: {
           ...n.data,
-          isRevealed: visibleNodes.has(n.id)
-        }
+          isRevealed: visibleNodes.has(n.id),
+        },
       }))
     );
 
-    // Update edges visibility
-    setEdges((eds) => 
+    // Update edge visibility
+    setEdges((eds) =>
       eds.map((edge) => {
-        // An edge is visible if BOTH its nodes are visible 
-        // AND at least one of them was expanded to trigger this connection
-        const isVisible = visibleNodes.has(edge.source) && visibleNodes.has(edge.target) &&
-                          (expandedNodeIds.has(edge.source) || expandedNodeIds.has(edge.target));
-        return {
-          ...edge,
-          hidden: !isVisible
-        };
+        const isVisible =
+          visibleNodes.has(edge.source) &&
+          visibleNodes.has(edge.target) &&
+          (expandedNodeIds.has(edge.source) || expandedNodeIds.has(edge.target));
+        return { ...edge, hidden: !isVisible };
       })
     );
   }, [expandedNodeIds, setNodes, setEdges]);
 
-  const onNodeClick = useCallback((event, clickedNode) => {
-    // Only allow clicking if the node is actually revealed
-    if (!clickedNode.data.isRevealed) return;
+  const onNodeClick = useCallback(
+    (event, clickedNode) => {
+      if (!clickedNode.data.isRevealed) return;
 
-    setExpandedNodeIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(clickedNode.id)) {
-        // Collapse: clicking an expanded node hides its children
-        newSet.delete(clickedNode.id);
-      } else {
-        // Expand: clicking a collapsed node reveals its children
-        newSet.add(clickedNode.id);
-      }
-      return newSet;
-    });
-  }, []);
+      // Open detail panel for this node
+      setSelectedNode(clickedNode);
+
+      // Toggle expand/collapse for drill-down
+      setExpandedNodeIds((prev) => {
+        const newSet = new Set(prev);
+        if (newSet.has(clickedNode.id)) {
+          newSet.delete(clickedNode.id);
+        } else {
+          newSet.add(clickedNode.id);
+        }
+        return newSet;
+      });
+    },
+    []
+  );
+
+  // Close the detail panel (and keep expanded state)
+  const closePanel = useCallback(() => setSelectedNode(null), []);
+
+  // Close panel when clicking the canvas background
+  const onPaneClick = useCallback(() => setSelectedNode(null), []);
 
   return (
     <div className="app-container">
       <div className="header">
-        <h1>Data Explorer Visualiser</h1>
-        <p>Proof of Concept: Drill Down ERD</p>
+        <div className="header-left">
+          <h1>Data Explorer Visualiser</h1>
+          <p>Click a node to expand its relationships and view field details</p>
+        </div>
+        <div className="header-right">
+          <span className="schema-badge">
+            {schemaData.entities.length} tables · {schemaData.relationships.length} relationships
+          </span>
+        </div>
       </div>
+
       <div className="flow-wrapper">
-        <ReactFlow 
-          nodes={nodes} 
-          edges={edges} 
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onNodeClick={onNodeClick}
+          onPaneClick={onPaneClick}
           nodeTypes={nodeTypes}
-          fitView 
+          fitView
           colorMode="dark"
         >
           <Background variant={BackgroundVariant.Dots} gap={24} size={2} color="#4c1d95" />
           <Controls />
         </ReactFlow>
+
+        {/* Detail Panel slides in from the right */}
+        <DetailPanel node={selectedNode} onClose={closePanel} />
       </div>
     </div>
   );

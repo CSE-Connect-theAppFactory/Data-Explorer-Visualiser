@@ -1,0 +1,247 @@
+/* ============================================================
+   Detail Panel — slides in from the right on node selection
+   ============================================================ */
+
+.detail-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 320px;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(16px);
+  border-left: 1px solid rgba(168, 85, 247, 0.3);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.4);
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.detail-panel--open {
+  transform: translateX(0);
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+.detail-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  background: rgba(168, 85, 247, 0.12);
+  border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+}
+
+.detail-panel__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: 0.02em;
+}
+
+.detail-panel__icon {
+  font-size: 1.3rem;
+}
+
+.detail-panel__close {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.detail-panel__close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+}
+
+/* ── Meta strip ─────────────────────────────────────────── */
+.detail-panel__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.detail-panel__badge {
+  background: rgba(168, 85, 247, 0.2);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  color: #c084fc;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.detail-panel__col-count {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+/* ── Scrollable body ────────────────────────────────────── */
+.detail-panel__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 85, 247, 0.3) transparent;
+}
+
+.detail-panel__body::-webkit-scrollbar {
+  width: 4px;
+}
+.detail-panel__body::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.3);
+  border-radius: 2px;
+}
+
+.detail-panel__section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #64748b;
+  text-transform: uppercase;
+  margin: 0 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.detail-panel__section-title:not(:first-child) {
+  margin-top: 20px;
+}
+
+/* ── Column rows ────────────────────────────────────────── */
+.detail-panel__columns {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail-panel__col-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.detail-panel__col-row:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.detail-panel__col-row.pk {
+  border-color: rgba(251, 191, 36, 0.2);
+  background: rgba(251, 191, 36, 0.05);
+}
+
+.detail-panel__col-row.fk {
+  border-color: rgba(56, 189, 248, 0.2);
+  background: rgba(56, 189, 248, 0.05);
+}
+
+.detail-panel__col-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-panel__key-badge {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 2px 5px;
+  border-radius: 3px;
+  min-width: 24px;
+  text-align: center;
+}
+
+.pk-badge {
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  color: #fbbf24;
+}
+
+.fk-badge {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+}
+
+.empty-badge {
+  background: transparent;
+  border: 1px solid transparent;
+  color: transparent;
+  visibility: hidden;
+}
+
+.detail-panel__col-name {
+  font-size: 0.85rem;
+  color: #e2e8f0;
+  font-weight: 500;
+}
+
+.detail-panel__col-row.pk .detail-panel__col-name {
+  color: #fbbf24;
+}
+
+.detail-panel__col-row.fk .detail-panel__col-name {
+  color: #38bdf8;
+}
+
+.detail-panel__col-type {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-family: 'Courier New', monospace;
+}
+
+/* ── Relationship rows ──────────────────────────────────── */
+.detail-panel__relationships {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail-panel__rel-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 7px;
+  background: rgba(168, 85, 247, 0.06);
+  border: 1px solid rgba(168, 85, 247, 0.15);
+  font-size: 0.8rem;
+}
+
+.detail-panel__rel-from {
+  color: #38bdf8;
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+}
+
+.detail-panel__rel-arrow {
+  color: #a855f7;
+  font-size: 1rem;
+}
+
+.detail-panel__rel-to {
+  color: #c084fc;
+  font-family: 'Courier New', monospace;
+}
